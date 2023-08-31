@@ -79,9 +79,15 @@ func start(logLevel int, httpPort int, configDir string) {
 	log.Info(logCtx, fmt.Sprintf("Log level: %v", log.L.Logger.GetLevel().String()))
 	log.Info(logCtx, "RUNNER START...")
 
-	pathConfig := filepath.Join(configDir, consts.CONFIG_FILE_NAME)
-
-	b, err := backend.New(logCtx, pathConfig)
+	primaryBackendConfigPath := filepath.Join(configDir, consts.PRIMARY_BACKEND_CONFIG_FILE_NAME)
+	primaryBackend, err := backend.New(logCtx, primaryBackendConfigPath, nil)
+	if err != nil {
+		log.L.Error("[ERROR]", err)
+		log.L.Error("[ERROR]", err)
+		os.Exit(1)
+	}
+	backendConfigPath := filepath.Join(configDir, consts.BACKEND_CONFIG_FILE_NAME)
+	b, err := backend.New(logCtx, backendConfigPath, &primaryBackend)
 	if err != nil {
 		log.L.Error("[ERROR]", err)
 		os.Exit(1)

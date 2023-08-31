@@ -561,8 +561,8 @@ func (ex *Executor) newSpec(ctx context.Context, credPath string) (*docker.Spec,
 	})
 	bindings = append(bindings, mount.Mount{
 		Type:   mount.TypeBind,
-		Source: filepath.Join(ex.configDir, consts.CONFIG_FILE_NAME),
-		Target: filepath.Join(job.HomeDir, ".dstack", consts.CONFIG_FILE_NAME),
+		Source: filepath.Join(ex.configDir, consts.BACKEND_CONFIG_FILE_NAME),
+		Target: filepath.Join(job.HomeDir, ".dstack", consts.BACKEND_CONFIG_FILE_NAME),
 	})
 	bindings = append(bindings, ex.backend.GetDockerBindings(ctx)...)
 

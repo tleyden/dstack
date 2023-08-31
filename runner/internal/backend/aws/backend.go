@@ -39,25 +39,29 @@ type AWSBackend struct {
 }
 
 type File struct {
-	Region string `yaml:"region"`
-	Bucket string `yaml:"bucket"`
+	Namespace string `yaml:"namespace"`
+	Region    string `yaml:"region"`
+	Bucket    string `yaml:"bucket"`
 }
 
 func init() {
-	backend.RegisterBackend("aws", func(ctx context.Context, pathConfig string) (backend.Backend, error) {
-		file := File{}
-		log.Trace(ctx, "Read config file", "path", pathConfig)
-		theConfig, err := os.ReadFile(pathConfig)
-		if err != nil {
-			return nil, gerrors.Wrap(err)
-		}
-		log.Trace(ctx, "Unmarshal config")
-		err = yaml.Unmarshal(theConfig, &file)
-		if err != nil {
-			return nil, gerrors.Wrap(err)
-		}
-		return New(file.Region, file.Bucket, "aws"), nil
-	})
+	backend.RegisterBackend(
+		"aws",
+		func(ctx context.Context, pathConfig string, primaryBackend *backend.Backend) (backend.Backend, error) {
+			file := File{}
+			log.Trace(ctx, "Read config file", "path", pathConfig)
+			theConfig, err := os.ReadFile(pathConfig)
+			if err != nil {
+				return nil, gerrors.Wrap(err)
+			}
+			log.Trace(ctx, "Unmarshal config")
+			err = yaml.Unmarshal(theConfig, &file)
+			if err != nil {
+				return nil, gerrors.Wrap(err)
+			}
+			return New(file.Region, file.Bucket, file.Namespace), nil
+		},
+	)
 }
 
 func New(region, bucket, namespace string) *AWSBackend {

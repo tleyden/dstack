@@ -9,7 +9,6 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/dstackai/dstack/runner/internal/backend"
-	"github.com/dstackai/dstack/runner/internal/backend/aws"
 	"github.com/dstackai/dstack/runner/internal/backend/base"
 	"github.com/dstackai/dstack/runner/internal/docker"
 	"github.com/dstackai/dstack/runner/internal/gerrors"
@@ -17,49 +16,43 @@ import (
 	"github.com/dstackai/dstack/runner/internal/models"
 )
 
-type AWSCredentials struct {
-	AccessKey string `yaml:"access_key"`
-	SecretKey string `yaml:"secret_key"`
-}
-
-type AWSStorageConfig struct {
-	Region      string         `yaml:"region"`
-	Bucket      string         `yaml:"bucket"`
-	Credentials AWSCredentials `yaml:"credentials"`
-}
-
 type LambdaConfig struct {
-	ApiKey        string           `yaml:"api_key"`
-	StorageConfig AWSStorageConfig `yaml:"storage_config"`
+	ApiKey string `yaml:"api_key"`
 }
 
 type LambdaBackend struct {
-	storageBackend *aws.AWSBackend
+	storageBackend backend.Backend
 	apiClient      *LambdaAPIClient
 }
 
 func init() {
-	backend.RegisterBackend("lambda", func(ctx context.Context, pathConfig string) (backend.Backend, error) {
-		config := LambdaConfig{}
-		log.Trace(ctx, "Read config file", "path", pathConfig)
-		fileContent, err := os.ReadFile(pathConfig)
-		if err != nil {
-			return nil, gerrors.Wrap(err)
-		}
-		log.Trace(ctx, "Unmarshal config")
-		err = yaml.Unmarshal(fileContent, &config)
-		if err != nil {
-			return nil, gerrors.Wrap(err)
-		}
-		return New(config), nil
-	})
+	backend.RegisterBackend(
+		"lambda",
+		func(ctx context.Context, pathConfig string, primaryBackend *backend.Backend) (backend.Backend, error) {
+			if primaryBackend == nil {
+				return nil, gerrors.New("primaryBackend cannot be nil")
+			}
+			config := LambdaConfig{}
+			log.Trace(ctx, "Read config file", "path", pathConfig)
+			fileContent, err := os.ReadFile(pathConfig)
+			if err != nil {
+				return nil, gerrors.Wrap(err)
+			}
+			log.Trace(ctx, "Unmarshal config")
+			err = yaml.Unmarshal(fileContent, &config)
+			if err != nil {
+				return nil, gerrors.Wrap(err)
+			}
+			return New(config, *primaryBackend), nil
+		},
+	)
 }
 
-func New(config LambdaConfig) *LambdaBackend {
-	_ = os.Setenv("AWS_ACCESS_KEY_ID", config.StorageConfig.Credentials.AccessKey)
-	_ = os.Setenv("AWS_SECRET_ACCESS_KEY", config.StorageConfig.Credentials.SecretKey)
+func New(config LambdaConfig, primaryBackend backend.Backend) *LambdaBackend {
+	// _ = os.Setenv("AWS_ACCESS_KEY_ID", config.StorageConfig.Credentials.AccessKey)
+	// _ = os.Setenv("AWS_SECRET_ACCESS_KEY", config.StorageConfig.Credentials.SecretKey)
 	return &LambdaBackend{
-		storageBackend: aws.New(config.StorageConfig.Region, config.StorageConfig.Bucket, "lambda"),
+		storageBackend: primaryBackend,
 		apiClient:      NewLambdaAPIClient(config.ApiKey),
 	}
 }
@@ -89,7 +82,7 @@ func (l *LambdaBackend) Stop(ctx context.Context) error {
 }
 
 func (l *LambdaBackend) Shutdown(ctx context.Context) error {
-	return l.apiClient.TerminateInstance(ctx, []string{l.storageBackend.State.RequestID})
+	return l.apiClient.TerminateInstance(ctx, []string{l.storageBackend.Job(ctx).RequestID})
 }
 
 func (l *LambdaBackend) GetArtifact(ctx context.Context, runName, localPath, remotePath string, mount bool) base.Artifacter {

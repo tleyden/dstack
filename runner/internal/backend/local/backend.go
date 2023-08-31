@@ -40,7 +40,7 @@ type Local struct {
 const LOCAL_BACKEND_DIR = "local_backend"
 
 func init() {
-	backend.RegisterBackend("local", func(ctx context.Context, pathConfig string) (backend.Backend, error) {
+	backend.RegisterBackend("local", func(ctx context.Context, pathConfig string, primaryBackend *backend.Backend) (backend.Backend, error) {
 		config := LocalConfigFile{}
 		fileContent, err := os.ReadFile(pathConfig)
 		if err != nil {

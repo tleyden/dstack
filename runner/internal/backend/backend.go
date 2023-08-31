@@ -56,7 +56,7 @@ var backends map[string]LoadFn
 var mu = sync.Mutex{}
 var ErrNotFoundTask = errors.New("not found task")
 
-type LoadFn func(ctx context.Context, path string) (Backend, error)
+type LoadFn func(ctx context.Context, path string, primaryBackend *Backend) (Backend, error)
 
 func RegisterBackend(name string, fn LoadFn) {
 	mu.Lock()
@@ -67,7 +67,7 @@ func RegisterBackend(name string, fn LoadFn) {
 	backends[name] = fn
 }
 
-func New(ctx context.Context, path string) (Backend, error) {
+func New(ctx context.Context, path string, primaryBackend *Backend) (Backend, error) {
 	log.Trace(ctx, "Create backend")
 	mu.Lock()
 	defer mu.Unlock()
@@ -92,5 +92,5 @@ func New(ctx context.Context, path string) (Backend, error) {
 	if backends[file.Backend] == nil {
 		return nil, gerrors.Newf("backend loading error : %s", file.Backend)
 	}
-	return backends[file.Backend](ctx, path)
+	return backends[file.Backend](ctx, path, primaryBackend)
 }

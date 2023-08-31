@@ -40,20 +40,23 @@ type GCPConfigFile struct {
 }
 
 func init() {
-	backend.RegisterBackend("gcp", func(ctx context.Context, pathConfig string) (backend.Backend, error) {
-		configFile := GCPConfigFile{}
-		log.Trace(ctx, "Read config file", "path", pathConfig)
-		fileContent, err := os.ReadFile(pathConfig)
-		if err != nil {
-			return nil, gerrors.Wrap(err)
-		}
-		log.Trace(ctx, "Unmarshal config")
-		err = yaml.Unmarshal(fileContent, &configFile)
-		if err != nil {
-			return nil, gerrors.Wrap(err)
-		}
-		return New(configFile.Project, configFile.Zone, configFile.Bucket)
-	})
+	backend.RegisterBackend(
+		"gcp",
+			func(ctx context.Context, pathConfig string, primaryBackend *backend.Backend) (backend.Backend, error) {
+			configFile := GCPConfigFile{}
+			log.Trace(ctx, "Read config file", "path", pathConfig)
+			fileContent, err := os.ReadFile(pathConfig)
+			if err != nil {
+				return nil, gerrors.Wrap(err)
+			}
+			log.Trace(ctx, "Unmarshal config")
+			err = yaml.Unmarshal(fileContent, &configFile)
+			if err != nil {
+				return nil, gerrors.Wrap(err)
+			}
+			return New(configFile.Project, configFile.Zone, configFile.Bucket)
+		},
+	)
 }
 
 func New(project, zone, bucket string) (*GCPBackend, error) {
