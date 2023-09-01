@@ -34,6 +34,12 @@ BackendType = Union[
     Literal["lambda"],
 ]
 
+PrimaryBackendType = Union[
+    Literal["aws"],
+    Literal["azure"],
+    Literal["gcp"],
+]
+
 
 class LocalBackendConfig(BaseModel):
     type: Literal["local"] = "local"
@@ -177,18 +183,18 @@ class LambdaBackendConfigWithCredsPartial(BaseModel):
     type: Literal["lambda"] = "lambda"
     api_key: Optional[str]
     regions: Optional[List[str]]
-    storage_backend: Optional[AWSStorageBackendConfigWithCredsPartial]
+    primary_backend: Optional[PrimaryBackendType]
 
 
 class LambdaBackendConfig(BaseModel):
     type: Literal["lambda"] = "lambda"
     regions: List[str]
-    storage_backend: AWSStorageBackendConfig
+    primary_backend: Optional[PrimaryBackendType]
 
 
 class LambdaBackendConfigWithCreds(LambdaBackendConfig):
     api_key: str
-    storage_backend: AWSStorageBackendConfigWithCreds
+    primary_backend: Optional[PrimaryBackendType]
 
 
 AnyBackendConfig = Union[
@@ -301,9 +307,8 @@ class AWSStorageBackendValues(BaseModel):
 
 class LambdaBackendValues(BaseModel):
     type: Literal["lambda"] = "lambda"
-    storage_backend_type: BackendElement
     regions: Optional[BackendMultiElement]
-    storage_backend_values: Optional[AWSStorageBackendValues]
+    primary_backend: Optional[BackendElement]
 
 
 class BackendValues(BaseModel):

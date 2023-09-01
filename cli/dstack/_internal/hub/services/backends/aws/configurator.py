@@ -6,6 +6,7 @@ from boto3.session import Session
 
 from dstack._internal.backend.aws import AwsBackend
 from dstack._internal.backend.aws.config import DEFAULT_REGION, AWSConfig
+from dstack._internal.backend.base import ComponentBasedBackend
 from dstack._internal.hub.db.models import Backend as DBBackend
 from dstack._internal.hub.schemas import (
     AWSBackendConfig,
@@ -17,6 +18,7 @@ from dstack._internal.hub.schemas import (
     AWSBucketBackendElementValue,
     BackendElement,
     BackendElementValue,
+    BackendInfo,
     BackendMultiElement,
 )
 from dstack._internal.hub.services.backends.base import BackendConfigError, Configurator
@@ -41,7 +43,9 @@ class AWSConfigurator(Configurator):
     NAME = "aws"
 
     def configure_backend(
-        self, backend_config: AWSBackendConfigWithCredsPartial
+        self,
+        backend_config: AWSBackendConfigWithCredsPartial,
+        backend_infos: List[BackendInfo],
     ) -> AWSBackendValues:
         backend_values = AWSBackendValues()
         session = Session()
@@ -114,7 +118,9 @@ class AWSConfigurator(Configurator):
             ec2_subnet_id=ec2_subnet_id,
         )
 
-    def get_backend(self, db_backend: DBBackend) -> AwsBackend:
+    def get_backend(
+        self, db_backend: DBBackend, primary_backend: Optional[ComponentBasedBackend]
+    ) -> AwsBackend:
         json_config = json.loads(db_backend.config)
         json_auth = json.loads(db_backend.auth)
         regions = json_config.get("regions")

@@ -1,9 +1,5 @@
 from typing import Optional
 
-import boto3
-
-from dstack._internal.backend.aws import utils as aws_utils
-from dstack._internal.backend.aws.config import DEFAULT_REGION
 from dstack._internal.backend.aws.logs import AWSLogging
 from dstack._internal.backend.aws.secrets import AWSSecretsManager
 from dstack._internal.backend.aws.storage import AWSStorage
@@ -21,31 +17,13 @@ class LambdaBackend(ComponentBasedBackend):
     def __init__(
         self,
         backend_config: LambdaConfig,
+        primary_backend: ComponentBasedBackend,
     ):
         self.backend_config = backend_config
+        self._storage = primary_backend.storage()
+        self._secrets_manager = primary_backend.secrets_manager()
+        self._logging = primary_backend.logging()
         self._compute = LambdaCompute(lambda_config=self.backend_config)
-        self._session = boto3.session.Session(
-            region_name=self.backend_config.storage_config.region,
-            aws_access_key_id=self.backend_config.storage_config.credentials.access_key,
-            aws_secret_access_key=self.backend_config.storage_config.credentials.secret_key,
-        )
-        self._storage = AWSStorage(
-            s3_client=aws_utils.get_s3_client(self._session),
-            bucket_name=self.backend_config.storage_config.bucket,
-            namespace=self.name,
-        )
-        self._secrets_manager = AWSSecretsManager(
-            secretsmanager_client=aws_utils.get_secretsmanager_client(
-                self._session, region_name=DEFAULT_REGION
-            ),
-            iam_client=aws_utils.get_iam_client(self._session),
-            sts_client=aws_utils.get_sts_client(self._session),
-            bucket_name=self.backend_config.storage_config.bucket,
-        )
-        self._logging = AWSLogging(
-            logs_client=aws_utils.get_logs_client(self._session, region_name=DEFAULT_REGION),
-            bucket_name=self.backend_config.storage_config.bucket,
-        )
         self._pricing = LambdaPricing()
 
     @classmethod

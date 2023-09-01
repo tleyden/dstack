@@ -6,23 +6,10 @@ from typing_extensions import Literal
 from dstack._internal.backend.base.config import BackendConfig
 
 
-class AWSStorageConfigCredentials(BaseModel):
-    access_key: str
-    secret_key: str
-
-
-class AWSStorageConfig(BaseModel):
-    backend: Literal["aws"] = "aws"
-    bucket: str
-    region: str
-    credentials: AWSStorageConfigCredentials
-
-
 class LambdaConfig(BackendConfig, BaseModel):
     backend: Literal["lambda"] = "lambda"
     regions: List[str]
     api_key: str
-    storage_config: AWSStorageConfig
 
     def serialize(self) -> Dict:
         return self.dict()

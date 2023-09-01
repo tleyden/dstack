@@ -8,6 +8,7 @@ import googleapiclient.errors
 from google.cloud import compute_v1, storage
 from google.oauth2 import service_account
 
+from dstack._internal.backend.base import ComponentBasedBackend
 from dstack._internal.backend.gcp import GCPBackend
 from dstack._internal.backend.gcp import auth as gcp_auth
 from dstack._internal.backend.gcp import utils as gcp_utils
@@ -16,6 +17,7 @@ from dstack._internal.hub.db.models import Backend as DBBackend
 from dstack._internal.hub.schemas import (
     BackendElement,
     BackendElementValue,
+    BackendInfo,
     BackendMultiElement,
     GCPBackendConfig,
     GCPBackendConfigWithCreds,
@@ -114,7 +116,9 @@ class GCPConfigurator(Configurator):
     NAME = "gcp"
 
     def configure_backend(
-        self, backend_config: GCPBackendConfigWithCredsPartial
+        self,
+        backend_config: GCPBackendConfigWithCredsPartial,
+        backend_infos: List[BackendInfo],
     ) -> GCPBackendValues:
         backend_values = GCPBackendValues()
         try:
@@ -199,7 +203,9 @@ class GCPConfigurator(Configurator):
             subnet=subnet,
         )
 
-    def get_backend(self, db_backend: DBBackend) -> GCPBackend:
+    def get_backend(
+        self, db_backend: DBBackend, primary_backend: Optional[ComponentBasedBackend]
+    ) -> GCPBackend:
         config_data = json.loads(db_backend.config)
         auth_data = json.loads(db_backend.auth)
         project_id = config_data.get("project")

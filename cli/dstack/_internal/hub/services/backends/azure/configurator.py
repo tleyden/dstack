@@ -49,6 +49,7 @@ from azure.mgmt.subscription import SubscriptionClient
 from dstack._internal.backend.azure import AzureBackend
 from dstack._internal.backend.azure import utils as azure_utils
 from dstack._internal.backend.azure.config import AzureConfig
+from dstack._internal.backend.base import ComponentBasedBackend
 from dstack._internal.hub.db.models import Backend as DBBackend
 from dstack._internal.hub.schemas import (
     AzureBackendConfig,
@@ -58,6 +59,7 @@ from dstack._internal.hub.schemas import (
     AzureBackendValues,
     BackendElement,
     BackendElementValue,
+    BackendInfo,
     BackendMultiElement,
 )
 from dstack._internal.hub.services.backends.azure.azure_identity_credential_adapter import (
@@ -91,7 +93,9 @@ class AzureConfigurator(Configurator):
     NAME = "azure"
 
     def configure_backend(
-        self, backend_config: AzureBackendConfigWithCredsPartial
+        self,
+        backend_config: AzureBackendConfigWithCredsPartial,
+        backend_infos: List[BackendInfo],
     ) -> AzureBackendValues:
         backend_values = AzureBackendValues()
         self.credential = DefaultAzureCredential()
@@ -206,7 +210,9 @@ class AzureConfigurator(Configurator):
             locations=locations,
         )
 
-    def get_backend(self, db_backend: DBBackend) -> AzureBackend:
+    def get_backend(
+        self, db_backend: DBBackend, primary_backend: Optional[ComponentBasedBackend]
+    ) -> AzureBackend:
         config_data = json.loads(db_backend.config)
         auth_data = json.loads(db_backend.auth)
         locations = config_data.get("locations")

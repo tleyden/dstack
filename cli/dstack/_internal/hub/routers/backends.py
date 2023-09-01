@@ -40,14 +40,16 @@ async def list_backend_types() -> List[BackendType]:
     return list_avaialble_backend_types()
 
 
-@root_router.post("/config_values")
+@project_router.post("/{project_name}/backends/config_values")
 async def get_backend_config_values(
     config: BackendConfigWithCredsPartial,
-    user: User = Depends(Authenticated()),
+    user_project: User = Depends(ProjectMember()),
 ) -> BackendValues:
+    _, project = user_project
+    backends_infos = await ProjectManager.list_backend_infos(project)
     configurator = get_backend_configurator(config.__root__.type)
     try:
-        result = await run_async(configurator.configure_backend, config.__root__)
+        result = await run_async(configurator.configure_backend, config.__root__, backends_infos)
     except BackendConfigError as e:
         _error_response_on_config_error(e, path_to_config=[])
     return result
@@ -64,7 +66,7 @@ async def create_backend(
     backend_config: BackendConfigWithCreds, user_project: User = Depends(ProjectMember())
 ) -> BackendConfigWithCreds:
     _, project = user_project
-    backend = await ProjectManager.get_backend(
+    backend = await ProjectManager.get_backend_by_name(
         project=project, backend_name=backend_config.__root__.type
     )
     if backend is not None:
@@ -76,9 +78,10 @@ async def create_backend(
                 )
             ],
         )
+    backend_infos = await ProjectManager.list_backend_infos(project)
     configurator = get_backend_configurator(backend_config.__root__.type)
     try:
-        await run_async(configurator.configure_backend, backend_config.__root__)
+        await run_async(configurator.configure_backend, backend_config.__root__, backend_infos)
         await ProjectManager.create_backend(
             project=project, backend_config=backend_config.__root__
         )

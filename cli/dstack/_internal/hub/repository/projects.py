@@ -135,7 +135,7 @@ class ProjectManager:
     async def get_backend_info(
         project: Project, backend_name: str, session: Optional[AsyncSession] = None
     ) -> Optional[BackendInfoWithCreds]:
-        backend = await ProjectManager._get_backend(
+        backend = await ProjectManager.get_backend_by_name(
             project=project, backend_name=backend_name, session=session
         )
         backend_info = await _backend_to_backend_info(backend=backend, include_creds=True)
@@ -143,13 +143,23 @@ class ProjectManager:
 
     @staticmethod
     @reuse_or_make_session
-    async def get_backend(
+    async def get_backend_by_name(
         project: Project, backend_name: str, session: Optional[AsyncSession] = None
     ) -> Optional[Backend]:
-        backend = await ProjectManager._get_backend(
-            project=project, backend_name=backend_name, session=session
+        query = await session.execute(
+            select(Backend).where(
+                Backend.project_name == project.name, Backend.name == backend_name
+            )
         )
-        return backend
+        return query.scalars().unique().first()
+
+    @staticmethod
+    @reuse_or_make_session
+    async def get_backend_by_id(
+        backend_id: int, session: Optional[AsyncSession] = None
+    ) -> Optional[Backend]:
+        query = await session.execute(select(Backend).where(Backend.id == backend_id))
+        return query.scalars().unique().first()
 
     @staticmethod
     @reuse_or_make_session
@@ -158,9 +168,7 @@ class ProjectManager:
         backend_config: AnyBackendConfigWithCreds,
         session: Optional[AsyncSession] = None,
     ):
-        backend = await _backend_config_to_backend(
-            project_name=project.name, backend_config=backend_config
-        )
+        backend = await _backend_config_to_backend(project=project, backend_config=backend_config)
         if backend is None:
             return
         await ProjectManager._create_backend(backend=backend, session=session)
@@ -172,9 +180,7 @@ class ProjectManager:
         backend_config: AnyBackendConfigWithCreds,
         session: Optional[AsyncSession] = None,
     ):
-        backend = await _backend_config_to_backend(
-            project_name=project.name, backend_config=backend_config
-        )
+        backend = await _backend_config_to_backend(project=project, backend_config=backend_config)
         await ProjectManager._update_backend(backend=backend, session=session)
 
     @staticmethod
@@ -218,18 +224,6 @@ class ProjectManager:
 
     @staticmethod
     @reuse_or_make_session
-    async def _get_backend(
-        project: Project, backend_name: str, session: Optional[AsyncSession] = None
-    ) -> Optional[Backend]:
-        query = await session.execute(
-            select(Backend).where(
-                Backend.project_name == project.name, Backend.name == backend_name
-            )
-        )
-        return query.scalars().unique().first()
-
-    @staticmethod
-    @reuse_or_make_session
     async def _create_backend(backend: Backend, session: Optional[AsyncSession] = None):
         session.add(backend)
         await session.commit()
@@ -249,19 +243,23 @@ class ProjectManager:
 
 
 async def _backend_config_to_backend(
-    project_name: str, backend_config: AnyBackendConfigWithCreds
+    project: Project, backend_config: AnyBackendConfigWithCreds
 ) -> Optional[Backend]:
     backend = Backend(
-        project_name=project_name,
+        project_name=project.name,
         name=backend_config.type,
         type=backend_config.type,
     )
     configurator = get_configurator(backend_config.type)
     if configurator is None:
         return None
-    config, auth = await run_async(configurator.create_backend, project_name, backend_config)
+    config, auth = await run_async(configurator.create_backend, project.name, backend_config)
     backend.config = json.dumps(config)
     backend.auth = json.dumps(auth)
+    primary_backend_name = getattr(backend_config, "primary_backend", None)
+    if primary_backend_name is not None:
+        primary_backend = await ProjectManager.get_backend_by_name(project, primary_backend_name)
+        backend.primary_backend_id = primary_backend.id
     return backend
 
 
@@ -272,6 +270,9 @@ async def _backend_to_backend_info(
     if configurator is None:
         return None
     backend_config = configurator.get_backend_config(backend, include_creds=include_creds)
+    if backend.primary_backend_id is not None:
+        primary_backend = await ProjectManager.get_backend_by_id(backend.primary_backend_id)
+        backend_config.primary_backend = primary_backend.name
     if include_creds:
         return BackendInfoWithCreds(
             name=backend.name,

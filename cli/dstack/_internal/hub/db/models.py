@@ -51,6 +51,10 @@ class Backend(Base):
     project: Mapped["Project"] = relationship()
     name: Mapped[str] = mapped_column(String(50))
     type: Mapped[str] = mapped_column(String(30))
+    primary_backend_id: Mapped[str] = mapped_column(
+        ForeignKey("backends.id", ondelete="CASCADE"), nullable=True
+    )
+    primary_backend: Mapped["Backend"] = relationship(lazy="joined")
 
     config: Mapped[str] = mapped_column(String(2000))
     auth: Mapped[str] = mapped_column(String(2000))

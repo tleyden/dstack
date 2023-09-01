@@ -4,6 +4,7 @@ from dstack._internal.backend.base import Backend
 from dstack._internal.core.error import BackendAuthError
 from dstack._internal.hub.db.models import Backend as DBBackend
 from dstack._internal.hub.db.models import Project
+from dstack._internal.hub.repository.projects import ProjectManager
 from dstack._internal.hub.services.backends import get_configurator
 from dstack._internal.hub.utils.common import run_async
 from dstack._internal.utils.logging import get_logger
@@ -21,11 +22,22 @@ async def get_project_backends(project: Project) -> List[Tuple[DBBackend, Backen
 
     backends = []
     for db_backend in project.backends:
+        primary_backend = None
+        if db_backend.primary_backend_id is not None:
+            primary_db_backend = await ProjectManager.get_backend_by_id(
+                db_backend.primary_backend_id
+            )
+            primary_backend_configurator = get_configurator(primary_db_backend.type)
+            if primary_backend_configurator is not None:
+                primary_backend = await run_async(
+                    primary_backend_configurator.get_backend, primary_db_backend, None
+                )
+
         configurator = get_configurator(db_backend.type)
         if configurator is None:
             continue
         try:
-            backend = await run_async(configurator.get_backend, db_backend)
+            backend = await run_async(configurator.get_backend, db_backend, primary_backend)
         except BackendAuthError:
             logger.warning(
                 "Credentials for %s backend are invalid. Backend will be ignored.", db_backend.name

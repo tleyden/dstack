@@ -98,5 +98,7 @@ class TestDeleteBackends:
             json={"backends": [backend.name]},
         )
         assert response.status_code == 200
-        backend = await ProjectManager.get_backend(project=project, backend_name=backend.name)
+        backend = await ProjectManager.get_backend_by_name(
+            project=project, backend_name=backend.name
+        )
         assert backend is None

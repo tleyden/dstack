@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
-from dstack._internal.backend.base import Backend
+from dstack._internal.backend.base import Backend, ComponentBasedBackend
 from dstack._internal.hub.db.models import Backend as DBBackend
 from dstack._internal.hub.schemas import (
     AnyBackendConfig,
@@ -9,6 +9,8 @@ from dstack._internal.hub.schemas import (
     AnyBackendConfigWithCredsPartial,
     BackendValues,
 )
+
+PRIMARY_BACKEND_TYPES = ["aws", "azure", "gcp"]
 
 
 class BackendConfigError(Exception):
@@ -38,5 +40,7 @@ class Configurator(ABC):
         pass
 
     @abstractmethod
-    def get_backend(self, db_backend: DBBackend) -> Backend:
+    def get_backend(
+        self, db_backend: DBBackend, primary_backend: Optional[ComponentBasedBackend]
+    ) -> Backend:
         pass
