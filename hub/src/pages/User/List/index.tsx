@@ -88,7 +88,7 @@ export const UserList: React.FC = () => {
     const deleteSelectedUserHandler = () => {
         const { selectedItems } = collectionProps;
         if (selectedItems?.length) {
-            deleteUsers(selectedItems.map((user) => user.user_name))
+            deleteUsers(selectedItems.map((user) => user.username))
                 .unwrap()
                 .then(() => actions.setSelectedItems([]))
                 .catch((error) => {
@@ -104,7 +104,7 @@ export const UserList: React.FC = () => {
     const editSelectedUserHandler = () => {
         const { selectedItems } = collectionProps;
 
-        if (selectedItems?.length) navigate(ROUTES.USER.EDIT.FORMAT(selectedItems[0].user_name));
+        if (selectedItems?.length) navigate(ROUTES.USER.EDIT.FORMAT(selectedItems[0].username));
     };
 
     const getIsTableItemDisabled = () => {

@@ -34,10 +34,14 @@ export const userApi = createApi({
                 result ? [...result.map(({ username }) => ({ type: 'User' as const, id: username })), 'User'] : ['User'],
         }),
 
-        getUser: builder.query<IUser, { name: IUser['username'] }>({
-            query: (arg) => {
+        getUser: builder.query<IUserWithCreds, { name: IUser['username'] }>({
+            query: ({ name }) => {
                 return {
-                    url: API.USERS.DETAILS(arg.name),
+                    url: API.USERS.DETAILS(),
+                    method: 'POST',
+                    body: {
+                        username: name,
+                    },
                 };
             },
 
@@ -56,7 +60,7 @@ export const userApi = createApi({
 
         createUser: builder.mutation<IUser, Omit<IUser, 'id'>>({
             query: (user) => ({
-                url: API.USERS.BASE(),
+                url: API.USERS.CREATE(),
                 method: 'POST',
                 body: user,
             }),
@@ -66,8 +70,8 @@ export const userApi = createApi({
 
         updateUser: builder.mutation<IUser, Partial<IUser> & Pick<IUser, 'username'>>({
             query: (user) => ({
-                url: API.USERS.DETAILS(user.username),
-                method: 'PATCH',
+                url: API.USERS.UPDATE(),
+                method: 'POST',
                 body: user,
             }),
 
@@ -76,8 +80,9 @@ export const userApi = createApi({
 
         refreshToken: builder.mutation<IUserWithCreds, Pick<IUser, 'username'>>({
             query: ({ username }) => ({
-                url: API.USERS.REFRESH_TOKEN(username),
+                url: API.USERS.REFRESH_TOKEN(),
                 method: 'POST',
+                body: { username },
             }),
 
             invalidatesTags: (result, error, { username }) => [{ type: 'User' as const, id: username }],

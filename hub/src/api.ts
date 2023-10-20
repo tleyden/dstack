@@ -5,9 +5,11 @@ export const API = {
     USERS: {
         BASE: () => `${API.BASE()}/users`,
         LIST: () => `${API.USERS.BASE()}/list`,
-        DETAILS: (name: IUser['username']) => `${API.USERS.BASE()}/${name}`,
+        CREATE: () => `${API.USERS.BASE()}/create`,
+        UPDATE: () => `${API.USERS.BASE()}/update`,
+        DETAILS: () => `${API.USERS.BASE()}/get_user`,
         CURRENT_USER: () => `${API.USERS.BASE()}/get_my_user`,
-        REFRESH_TOKEN: (name: IUser['username']) => `${API.USERS.DETAILS(name)}/refresh-token`,
+        REFRESH_TOKEN: () => `${API.USERS.BASE()}/refresh_token`,
     },
 
     PROJECTS: {

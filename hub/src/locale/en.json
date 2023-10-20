@@ -379,9 +379,8 @@
     "no_match": "No matches found"
   },
   "roles": {
-    "run": "Run",
     "admin": "Admin",
-    "read": "Read"
+    "user": "User"
   },
   "confirm_dialog": {
     "title": "Confirm delete",

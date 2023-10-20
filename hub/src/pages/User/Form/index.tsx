@@ -22,7 +22,7 @@ import { copyToClipboard } from 'libs';
 import { TRoleSelectOption } from './types';
 
 export interface Props {
-    initialValues?: IUser;
+    initialValues?: IUserWithCreds;
     loading?: boolean;
     onCancel: () => void;
     onSubmit: (user: IUser) => void;
@@ -43,17 +43,17 @@ export const UserForm: React.FC<Props> = ({
 
     const { handleSubmit, control } = useForm<IUser>({
         defaultValues: initialValues ?? {
-            global_role: 'read',
+            global_role: 'user',
         },
     });
 
     const roleSelectOptions: TRoleSelectOption[] = [
         { label: t('roles.admin'), value: 'admin' },
-        { label: t('roles.read'), value: 'read' },
+        { label: t('roles.user'), value: 'user' },
     ];
 
     const onCopyToken = () => {
-        copyToClipboard(initialValues?.token ?? '');
+        copyToClipboard(initialValues?.creds.token ?? '');
     };
 
     const onSubmit = (data: IUser) => {
@@ -83,7 +83,7 @@ export const UserForm: React.FC<Props> = ({
                                     label={t('users.user_name')}
                                     description={t('users.user_name_description')}
                                     control={control}
-                                    name="user_name"
+                                    name="username"
                                     disabled={loading}
                                     rules={{
                                         required: t('validation.required'),
@@ -126,7 +126,7 @@ export const UserForm: React.FC<Props> = ({
                                     </Popover>
                                 </Box>
 
-                                {initialValues.token}
+                                {initialValues.creds.token}
 
                                 <Box margin={{ left: 'l' }} display="inline-block">
                                     <Button

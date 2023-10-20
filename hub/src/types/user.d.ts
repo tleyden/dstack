@@ -1,4 +1,4 @@
-declare type TUserRole = 'read' | 'admin' | 'run'
+declare type TUserRole = 'user' | 'admin';
 
 declare interface IUser {
     id: string,

@@ -47,7 +47,7 @@ export const UserEdit: React.FC = () => {
 
         try {
             await refreshToken({
-                user_name: paramUserName,
+                username: paramUserName,
             }).unwrap();
 
             pushNotification({
@@ -70,7 +70,7 @@ export const UserEdit: React.FC = () => {
         try {
             const data = await updateUser({
                 ...pick(userData, ['global_role']),
-                user_name: paramUserName,
+                username: paramUserName,
             }).unwrap();
 
             pushNotification({
@@ -78,7 +78,7 @@ export const UserEdit: React.FC = () => {
                 content: t('users.edit.success_notification'),
             });
 
-            navigate(ROUTES.USER.DETAILS.FORMAT(data.user_name ?? paramUserName));
+            navigate(ROUTES.USER.DETAILS.FORMAT(data.username ?? paramUserName));
         } catch (e) {
             pushNotification({
                 type: 'error',

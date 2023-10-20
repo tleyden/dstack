@@ -40,7 +40,7 @@ export const UserAdd: React.FC = () => {
                 content: t('users.create.success_notification'),
             });
 
-            navigate(ROUTES.USER.DETAILS.FORMAT(data.user_name));
+            navigate(ROUTES.USER.DETAILS.FORMAT(data.username));
         } catch (e) {
             pushNotification({
                 type: 'error',
