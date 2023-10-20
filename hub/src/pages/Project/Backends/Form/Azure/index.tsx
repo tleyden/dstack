@@ -20,13 +20,13 @@ import { isRequestFormErrors2, isRequestFormFieldError } from 'libs';
 import { useBackendValuesMutation } from 'services/backend';
 import { AzureCredentialTypeEnum } from 'types';
 
-import { CREDENTIALS_HELP, FIELD_NAMES, LOCATIONS_HELP, STORAGE_ACCOUNT_HELP, SUBSCRIPTION_HELP } from './constants';
+import { CREDENTIALS_HELP, FIELD_NAMES, LOCATIONS_HELP, SUBSCRIPTION_HELP } from './constants';
 
 import { IProps } from './types';
 
 import styles from './styles.module.scss';
 
-const FIELDS_QUEUE = [FIELD_NAMES.SUBSCRIPTION_ID, FIELD_NAMES.LOCATIONS, FIELD_NAMES.STORAGE_ACCOUNT];
+const FIELDS_QUEUE = [FIELD_NAMES.SUBSCRIPTION_ID, FIELD_NAMES.LOCATIONS];
 
 export const AzureBackend: React.FC<IProps> = ({ loading }) => {
     const { t } = useTranslation();
@@ -36,7 +36,6 @@ export const AzureBackend: React.FC<IProps> = ({ loading }) => {
     const [subscriptionIds, setSubscriptionIds] = useState<FormSelectOptions>([]);
     const [tenantIds, setTenantIds] = useState<FormSelectOptions>([]);
     const [locations, setLocations] = useState<FormMultiselectOptions>([]);
-    const [storageAccounts, setStorageAccounts] = useState<FormSelectOptions>([]);
     const [availableDefaultCredentials, setAvailableDefaultCredentials] = useState<boolean | null>(null);
     const lastUpdatedField = useRef<string | null>(null);
     const isFirstRender = useRef<boolean>(true);
@@ -55,7 +54,7 @@ export const AzureBackend: React.FC<IProps> = ({ loading }) => {
 
     const changeFormHandler = async () => {
         const formValues = getValues();
-        const backendCredentials = formValues?.credentials ?? {};
+        const backendCredentials = formValues?.creds ?? {};
 
         if (
             backendCredentials.type === AzureCredentialTypeEnum.CLIENT &&
@@ -64,7 +63,7 @@ export const AzureBackend: React.FC<IProps> = ({ loading }) => {
             return;
         }
 
-        if (formValues?.credentials && !formValues.credentials.type) delete formValues.credentials;
+        if (formValues?.creds && !formValues.creds.type) delete formValues.creds;
 
         clearErrors();
 
@@ -78,7 +77,7 @@ export const AzureBackend: React.FC<IProps> = ({ loading }) => {
             setValuesData(response);
             lastUpdatedField.current = null;
 
-            setAvailableDefaultCredentials(response.default_credentials);
+            setAvailableDefaultCredentials(response.default_creds);
 
             // select authorization option
             if (!backendCredentials.type) {
@@ -87,7 +86,7 @@ export const AzureBackend: React.FC<IProps> = ({ loading }) => {
                     response.default_credentials ? AzureCredentialTypeEnum.DEFAULT : AzureCredentialTypeEnum.CLIENT,
                 );
 
-                if (response.default_credentials) changeFormHandler().catch(console.log);
+                if (response.default_creds) changeFormHandler().catch(console.log);
             }
 
             // TENANT_ID available for only client credentials type
@@ -111,12 +110,6 @@ export const AzureBackend: React.FC<IProps> = ({ loading }) => {
             }
             if (response.locations?.selected !== undefined) {
                 setValue(FIELD_NAMES.LOCATIONS, response.locations.selected);
-            }
-            if (response.storage_account?.values) {
-                setStorageAccounts(response.storage_account.values);
-            }
-            if (response.storage_account?.selected !== undefined) {
-                setValue(FIELD_NAMES.STORAGE_ACCOUNT, response.storage_account.selected);
             }
         } catch (errorResponse) {
             console.log('fetch backends values error:', errorResponse);
@@ -197,9 +190,6 @@ export const AzureBackend: React.FC<IProps> = ({ loading }) => {
                 break;
             case FIELD_NAMES.LOCATIONS:
                 disabledField = disabledField || !locations.length;
-                break;
-            case FIELD_NAMES.STORAGE_ACCOUNT:
-                disabledField = disabledField || !storageAccounts.length;
                 break;
         }
 
@@ -317,19 +307,6 @@ export const AzureBackend: React.FC<IProps> = ({ loading }) => {
                 disabled={getDisabledByFieldName(FIELD_NAMES.LOCATIONS)}
                 secondaryControl={renderSpinner()}
                 options={locations}
-            />
-
-            <FormSelect
-                info={<InfoLink onFollow={() => openHelpPanel(STORAGE_ACCOUNT_HELP)} />}
-                label={t('projects.edit.azure.storage_account')}
-                description={t('projects.edit.azure.storage_account_description')}
-                placeholder={t('projects.edit.azure.storage_account_placeholder')}
-                control={control}
-                name={FIELD_NAMES.STORAGE_ACCOUNT}
-                disabled={getDisabledByFieldName(FIELD_NAMES.STORAGE_ACCOUNT)}
-                onChange={getOnChangeSelectField(FIELD_NAMES.STORAGE_ACCOUNT)}
-                options={storageAccounts}
-                secondaryControl={renderSpinner()}
             />
         </SpaceBetween>
     );

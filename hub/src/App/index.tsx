@@ -45,10 +45,10 @@ const App: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (userData?.user_name || getUserError) {
+        if (userData?.username || getUserError) {
             setIsAuthorizing(false);
 
-            if (userData?.user_name) {
+            if (userData?.username) {
                 dispatch(setUserData(userData));
             }
         }

@@ -31,12 +31,11 @@ export const ProjectSettings: React.FC = () => {
 
     const {
         data: backendsData,
-        isLoading: isLoadingBackends,
         isDeleting: isDeletingBackend,
         addBackend,
         deleteBackend,
         editBackend,
-    } = useBackendsTable(paramProjectName);
+    } = useBackendsTable(paramProjectName, data?.backends ?? []);
 
     const {
         data: gatewaysData,
@@ -50,7 +49,7 @@ export const ProjectSettings: React.FC = () => {
     const currentUserToken = useAppSelector(selectAuthToken);
     const [pushNotification] = useNotifications();
 
-    const isLoadingPage = isLoading || !data || isLoadingBackends || isLoadingGateways;
+    const isLoadingPage = isLoading || !data || isLoadingGateways;
 
     useBreadcrumbs([
         {

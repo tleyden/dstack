@@ -10,7 +10,7 @@ export const projectApi = createApi({
         prepareHeaders: fetchBaseQueryHeaders,
     }),
 
-    tagTypes: ['Projects', 'ProjectRepos', 'ProjectLogs'],
+    tagTypes: ['Projects', 'ProjectRepos', 'ProjectLogs', 'Backends'],
 
     endpoints: (builder) => ({
         getProjects: builder.query<IProject[], void>({

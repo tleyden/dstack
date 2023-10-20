@@ -15,8 +15,8 @@ export const gatewayApi = createApi({
     endpoints: (builder) => ({
         getProjectGateways: builder.query<IGateway[], { projectName: IProject['project_name'] }>({
             query: ({ projectName }) => ({
-                url: API.PROJECT_GATEWAYS.BASE(projectName),
-                method: 'GET',
+                url: API.PROJECT_GATEWAYS.LIST(projectName),
+                method: 'POST',
             }),
 
             providesTags: (result) =>
@@ -30,8 +30,11 @@ export const gatewayApi = createApi({
             { projectName: IProject['project_name']; instanceName: IGateway['head']['instance_name'] }
         >({
             query: ({ projectName, instanceName }) => ({
-                url: API.PROJECT_GATEWAYS.DETAILS(projectName, instanceName),
-                method: 'GET',
+                url: API.PROJECT_GATEWAYS.DETAILS(projectName),
+                method: 'POST',
+                body: {
+                    name: instanceName,
+                },
             }),
 
             providesTags: (result) =>
@@ -40,7 +43,7 @@ export const gatewayApi = createApi({
 
         getProjectGatewayBackends: builder.query<TGatewayBackendsListResponse, { projectName: IProject['project_name'] }>({
             query: ({ projectName }) => ({
-                url: API.PROJECT_GATEWAYS.LIST_BACKENDS(projectName),
+                url: API.PROJECT_GATEWAYS.LIST(projectName),
                 method: 'GET',
             }),
 
@@ -70,37 +73,37 @@ export const gatewayApi = createApi({
             invalidatesTags: () => ['Gateways'],
         }),
 
-        updateProjectGateway: builder.mutation<
-            IGateway,
-            {
-                projectName: IProject['project_name'];
-                instanceName: IGateway['head']['instance_name'];
-                values: TUpdateGatewayParams;
-            }
-        >({
-            query: ({ projectName, instanceName, values }) => ({
-                url: API.PROJECT_GATEWAYS.UPDATE(projectName, instanceName),
-                method: 'POST',
-                body: values,
-            }),
-
-            invalidatesTags: (result, _, { instanceName }) => [{ type: 'Gateways' as const, id: instanceName }, 'Gateways'],
-        }),
-
-        testProjectGatewayDomain: builder.mutation<
-            IGateway,
-            {
-                projectName: IProject['project_name'];
-                instanceName: IGateway['head']['instance_name'];
-                domain: string;
-            }
-        >({
-            query: ({ projectName, instanceName, domain }) => ({
-                url: API.PROJECT_GATEWAYS.TEST_DOMAIN(projectName, instanceName),
-                method: 'POST',
-                body: { domain },
-            }),
-        }),
+        // updateProjectGateway: builder.mutation<
+        //     IGateway,
+        //     {
+        //         projectName: IProject['project_name'];
+        //         instanceName: IGateway['head']['instance_name'];
+        //         values: TUpdateGatewayParams;
+        //     }
+        // >({
+        //     query: ({ projectName, instanceName, values }) => ({
+        //         url: API.PROJECT_GATEWAYS.UPDATE(projectName, instanceName),
+        //         method: 'POST',
+        //         body: values,
+        //     }),
+        //
+        //     invalidatesTags: (result, _, { instanceName }) => [{ type: 'Gateways' as const, id: instanceName }, 'Gateways'],
+        // }),
+        //
+        // testProjectGatewayDomain: builder.mutation<
+        //     IGateway,
+        //     {
+        //         projectName: IProject['project_name'];
+        //         instanceName: IGateway['head']['instance_name'];
+        //         domain: string;
+        //     }
+        // >({
+        //     query: ({ projectName, instanceName, domain }) => ({
+        //         url: API.PROJECT_GATEWAYS.TEST_DOMAIN(projectName, instanceName),
+        //         method: 'POST',
+        //         body: { domain },
+        //     }),
+        // }),
     }),
 });
 
@@ -110,6 +113,6 @@ export const {
     useGetProjectGatewayBackendsQuery,
     useCreateProjectGatewayMutation,
     useDeleteProjectGatewayMutation,
-    useUpdateProjectGatewayMutation,
-    useTestProjectGatewayDomainMutation,
+    // useUpdateProjectGatewayMutation,
+    // useTestProjectGatewayDomainMutation,
 } = gatewayApi;

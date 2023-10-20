@@ -55,7 +55,7 @@ export const appSlice = createSlice({
             }
         },
 
-        setUserData: (state, action: PayloadAction<IUserSmall>) => {
+        setUserData: (state, action: PayloadAction<IUser>) => {
             state.userData = action.payload;
         },
 
@@ -82,7 +82,7 @@ export const appSlice = createSlice({
 export const { setAuthData, removeAuthData, setUserData, setBreadcrumb, openHelpPanel, closeHelpPanel } = appSlice.actions;
 export const selectUserData = (state: RootState) => state.app.userData;
 export const selectAuthToken = (state: RootState) => state.app.authData?.token;
-export const selectUserName = (state: RootState) => state.app.userData?.user_name;
+export const selectUserName = (state: RootState) => state.app.userData?.username;
 export const selectBreadcrumbs = (state: RootState) => state.app.breadcrumbs;
 export const selectHelpPanelOpen = (state: RootState) => state.app.helpPanel.open;
 export const selectHelpPanelContent = (state: RootState) => state.app.helpPanel.content;

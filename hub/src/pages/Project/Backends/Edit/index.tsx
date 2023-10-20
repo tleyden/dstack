@@ -59,7 +59,7 @@ export const BackendEdit: React.FC = () => {
 
                 navigate(ROUTES.PROJECT.DETAILS.SETTINGS.FORMAT(paramProjectName));
             })
-            .catch((error) => console.log(error));
+            .catch(console.log);
 
         return request;
     };
@@ -75,7 +75,7 @@ export const BackendEdit: React.FC = () => {
         <Container header={<Header variant="h2">{t('backend.edit_backend')}</Header>}>
             {data && (
                 <BackendForm
-                    initialValues={data.config}
+                    initialValues={data}
                     loading={isBackendUpdating}
                     onSubmit={onSubmitHandler}
                     onCancel={onCancelHandler}

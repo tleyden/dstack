@@ -62,21 +62,6 @@ export const useColumnsDefinitions = ({ loading, onDeleteClick, onEditClick }: h
         }
     };
 
-    const getBucketByBackendType = (backend: IProjectBackend) => {
-        switch (backend.config.type) {
-            case BackendTypesEnum.AWS:
-                return backend.config.s3_bucket_name;
-            case BackendTypesEnum.AZURE:
-                return backend.config.storage_account;
-            case BackendTypesEnum.GCP:
-                return backend.config.bucket_name;
-            case BackendTypesEnum.LAMBDA:
-                return backend.config.storage_backend.bucket_name;
-            default:
-                return '-';
-        }
-    };
-
     const columns = useMemo(() => {
         return [
             {
@@ -92,13 +77,11 @@ export const useColumnsDefinitions = ({ loading, onDeleteClick, onEditClick }: h
             },
 
             {
-                id: 'bucket',
-                header: t('backend.table.bucket'),
+                id: 'actions',
+                header: '',
 
                 cell: (backend: IProjectBackend) => (
                     <div className={styles.cell}>
-                        <div>{getBucketByBackendType(backend)}</div>
-
                         <div className={styles.contextMenu}>
                             {onEditClick && (
                                 <Button

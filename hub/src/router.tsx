@@ -8,8 +8,8 @@ import { ProjectAdd, ProjectDetails, ProjectList, ProjectSettings } from 'pages/
 import { BackendAdd, BackendEdit } from 'pages/Project/Backends';
 import { AddGateway, EditGateway } from 'pages/Project/Gateways';
 import { RepositoryDetails, RepositoryList, RepositorySettings } from 'pages/Repositories';
-import { Artifacts as RunArtifacts, List as MainRunList, Logs as RunLogs, RunDetails, RunList } from 'pages/Runs';
-import { TagDetails, TagList } from 'pages/Tags';
+import { List as MainRunList, Logs as RunLogs, RunDetails, RunList } from 'pages/Runs';
+import { TagDetails } from 'pages/Tags';
 import { UserAdd, UserDetails, UserEdit, UserList } from 'pages/User';
 
 import { AuthErrorMessage } from './App/AuthErrorMessage';
@@ -64,21 +64,21 @@ export const router = createBrowserRouter([
                     },
                 ],
             },
-            {
-                path: ROUTES.PROJECT.DETAILS.REPOSITORIES.DETAILS.TEMPLATE,
-                element: <RepositoryDetails />,
-
-                children: [
-                    {
-                        index: true,
-                        element: <RunList />,
-                    },
-                    {
-                        path: ROUTES.PROJECT.DETAILS.TAGS.TEMPLATE,
-                        element: <TagList />,
-                    },
-                ],
-            },
+            // {
+            //     path: ROUTES.PROJECT.DETAILS.REPOSITORIES.DETAILS.TEMPLATE,
+            //     element: <RepositoryDetails />,
+            //
+            //     children: [
+            //         {
+            //             index: true,
+            //             element: <RunList />,
+            //         },
+            //         {
+            //             path: ROUTES.PROJECT.DETAILS.TAGS.TEMPLATE,
+            //             element: <TagList />,
+            //         },
+            //     ],
+            // },
             {
                 path: ROUTES.PROJECT.DETAILS.REPOSITORIES.SETTINGS.TEMPLATE,
                 element: <RepositorySettings />,
@@ -91,11 +91,6 @@ export const router = createBrowserRouter([
                     {
                         index: true,
                         element: <RunLogs />,
-                    },
-
-                    {
-                        path: ROUTES.PROJECT.DETAILS.RUNS.ARTIFACTS.TEMPLATE,
-                        element: <RunArtifacts />,
                     },
                 ],
             },

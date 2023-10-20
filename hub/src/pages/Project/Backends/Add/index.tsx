@@ -59,12 +59,6 @@ export const BackendAdd: React.FC = () => {
             })
             .catch((error) => {
                 console.log(error);
-                pushNotification({
-                    type: 'error',
-                    content: t('common.server_error', {
-                        error: error?.data?.detail?.map((i: { msg: string }) => i.msg).join(', '),
-                    }),
-                });
             });
 
         return request;

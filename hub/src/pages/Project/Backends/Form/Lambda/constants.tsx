@@ -1,16 +1,8 @@
 import React from 'react';
 
 export const FIELD_NAMES = {
-    API_KEY: 'api_key',
+    API_KEY: 'creds.api_key',
     REGIONS: 'regions',
-    STORAGE_BACKEND: {
-        TYPE: 'storage_backend.type',
-        BUCKET_NAME: 'storage_backend.bucket_name',
-        CREDENTIALS: {
-            ACCESS_KEY: 'storage_backend.credentials.access_key',
-            SECRET_KEY: 'storage_backend.credentials.secret_key',
-        },
-    },
 };
 
 export const API_KEY_HELP = {

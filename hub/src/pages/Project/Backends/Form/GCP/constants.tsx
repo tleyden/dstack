@@ -2,15 +2,12 @@ import React from 'react';
 
 export const FIELD_NAMES = {
     CREDENTIALS: {
-        TYPE: 'credentials.type',
-        FILENAME: 'credentials.filename',
-        DATA: 'credentials.data',
+        TYPE: 'creds.type',
+        FILENAME: 'creds.filename',
+        DATA: 'creds.data',
     },
     REGIONS: 'regions',
-    BUCKET_NAME: 'bucket_name',
-    VPC_SUBNET: 'vpc_subnet',
-    VPC: 'vpc',
-    SUBNET: 'subnet',
+    PROJECT_ID: 'project_id',
 };
 
 export const SERVICE_ACCOUNT_HELP = {
@@ -70,29 +67,15 @@ export const REGIONS_HELP = {
     ),
 };
 
-export const BUCKET_HELP = {
-    header: <h2>Bucket</h2>,
+export const PROJECT_ID_HELP = {
+    header: <h2>Project Id</h2>,
     body: (
         <>
             <p>
-                Select an existing storage <i>Bucket</i> to store workflow artifacts.
+                Select <i>Project Id</i>
             </p>
             <p>
-                Please note that the <i>Bucket</i> must belong to the selected <i>Region</i> the project to which the provided{' '}
-                <i>Service account</i> belongs. Furthermore, the configured <i>Service Account</i> must have the necessary write
-                permissions for the <i>Bucket</i>.
-            </p>
-        </>
-    ),
-};
-
-export const SUBNET_HELP = {
-    header: <h2>Subnet</h2>,
-    body: (
-        <>
-            <p>
-                Select a <i>Subnet</i> to run workflows in. If no Subnet is specified, <i>dstack</i> will use the default{' '}
-                <i>Subnet</i> configured in your AWS account.
+                The selected <i>Project Id</i> will be used to run workflows and store artifacts.
             </p>
         </>
     ),

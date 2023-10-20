@@ -1,12 +1,15 @@
 declare type TUserRole = 'read' | 'admin' | 'run'
 
 declare interface IUser {
-    user_name: string;
-    token: string
+    id: string,
+    username: string;
     global_role: TUserRole
 }
 
-declare interface IUserAuthData extends Pick<IUser, 'token'>{}
+declare interface IUserWithCreds extends IUser {
+    "creds": {
+        "token": string
+    }
+}
 
-declare interface IUserSmall extends Pick<IUser, 'user_name' | 'global_role'>{}
-
+declare interface IUserAuthData extends Pick<IUserWithCreds['creds'], 'token'>{}

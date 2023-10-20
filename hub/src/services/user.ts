@@ -13,10 +13,11 @@ export const userApi = createApi({
     tagTypes: ['User'],
 
     endpoints: (builder) => ({
-        getUserData: builder.query<IUserSmall, Partial<Pick<IUser, 'token'>>>({
+        getUserData: builder.query<IUser, Partial<IUserAuthData>>({
             query: () => {
                 return {
-                    url: API.USERS.INFO(),
+                    url: API.USERS.CURRENT_USER(),
+                    method: 'POST',
                 };
             },
         }),
@@ -25,63 +26,64 @@ export const userApi = createApi({
             query: () => {
                 return {
                     url: API.USERS.LIST(),
+                    method: 'POST',
                 };
             },
 
             providesTags: (result) =>
-                result ? [...result.map(({ user_name }) => ({ type: 'User' as const, id: user_name })), 'User'] : ['User'],
+                result ? [...result.map(({ username }) => ({ type: 'User' as const, id: username })), 'User'] : ['User'],
         }),
 
-        getUser: builder.query<IUser, { name: IUser['user_name'] }>({
+        getUser: builder.query<IUser, { name: IUser['username'] }>({
             query: (arg) => {
                 return {
                     url: API.USERS.DETAILS(arg.name),
                 };
             },
 
-            providesTags: (result) => (result ? [{ type: 'User' as const, id: result.user_name }] : []),
+            providesTags: (result) => (result ? [{ type: 'User' as const, id: result.username }] : []),
         }),
 
-        checkAuthToken: builder.mutation<IUser, Pick<IUser, 'token'>>({
+        checkAuthToken: builder.mutation<IUser, { token: string }>({
             query: ({ token }) => ({
-                url: API.USERS.INFO(),
-                method: 'GET',
+                url: API.USERS.CURRENT_USER(),
+                method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             }),
         }),
 
-        createUser: builder.mutation<IUser, Omit<IUser, 'token'>>({
+        createUser: builder.mutation<IUser, Omit<IUser, 'id'>>({
             query: (user) => ({
                 url: API.USERS.BASE(),
                 method: 'POST',
                 body: user,
             }),
 
-            invalidatesTags: (result) => [{ type: 'User' as const, id: result?.user_name }, 'User'],
+            invalidatesTags: (result) => [{ type: 'User' as const, id: result?.username }, 'User'],
         }),
 
-        updateUser: builder.mutation<IUser, Partial<IUser> & Pick<IUser, 'user_name'>>({
+        updateUser: builder.mutation<IUser, Partial<IUser> & Pick<IUser, 'username'>>({
             query: (user) => ({
-                url: API.USERS.DETAILS(user.user_name),
+                url: API.USERS.DETAILS(user.username),
                 method: 'PATCH',
                 body: user,
             }),
 
-            invalidatesTags: (result) => [{ type: 'User' as const, id: result?.user_name }],
+            invalidatesTags: (result) => [{ type: 'User' as const, id: result?.username }],
         }),
 
-        refreshToken: builder.mutation<Pick<IUser, 'token'>, Pick<IUser, 'user_name'>>({
-            query: ({ user_name }) => ({
-                url: API.USERS.REFRESH_TOKEN(user_name),
+        refreshToken: builder.mutation<IUserWithCreds, Pick<IUser, 'username'>>({
+            query: ({ username }) => ({
+                url: API.USERS.REFRESH_TOKEN(username),
                 method: 'POST',
             }),
 
-            invalidatesTags: (result, error, { user_name }) => [{ type: 'User' as const, id: user_name }],
+            invalidatesTags: (result, error, { username }) => [{ type: 'User' as const, id: username }],
         }),
 
-        deleteUsers: builder.mutation<void, IUser['user_name'][]>({
+        deleteUsers: builder.mutation<void, IUser['username'][]>({
             query: (userNames) => ({
                 url: API.USERS.BASE(),
                 method: 'DELETE',

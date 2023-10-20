@@ -2,13 +2,11 @@ import React from 'react';
 
 export const FIELD_NAMES = {
     CREDENTIALS: {
-        TYPE: 'credentials.type',
-        ACCESS_KEY: 'credentials.access_key',
-        SECRET_KEY: 'credentials.secret_key',
+        TYPE: 'creds.type',
+        ACCESS_KEY: 'creds.access_key',
+        SECRET_KEY: 'creds.secret_key',
     },
     REGIONS: 'regions',
-    S3_BUCKET_NAME: 's3_bucket_name',
-    EC2_SUBNET_ID: 'ec2_subnet_id',
 };
 
 export const CREDENTIALS_HELP = {
@@ -48,33 +46,6 @@ export const REGIONS_HELP = {
             </p>
             <p>
                 The selected <i>Regions</i> will be used to run workflows and store artifacts.
-            </p>
-        </>
-    ),
-};
-
-export const BUCKET_HELP = {
-    header: <h2>Bucket</h2>,
-    body: (
-        <>
-            <p>
-                Select an existing S3 <i>Bucket</i> to store workflow artifacts.
-            </p>
-            <p>
-                Please note that the <i>Bucket</i> must belong to the selected <i>Region</i>, and the user to whom the provided{' '}
-                credentials belong must have write permissions to the <i>Bucket</i>.
-            </p>
-        </>
-    ),
-};
-
-export const SUBNET_HELP = {
-    header: <h2>Subnet</h2>,
-    body: (
-        <>
-            <p>
-                Select a <i>Subnet</i> to run workflows in. If no Subnet is specified, <i>dstack</i> will use the default{' '}
-                <i>Subnet</i> configured in your AWS account.
             </p>
         </>
     ),

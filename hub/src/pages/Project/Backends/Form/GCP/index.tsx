@@ -8,6 +8,7 @@ import {
     FormMultiselectOptions,
     FormS3BucketSelector,
     FormSelect,
+    FormSelectOptions,
     InfoLink,
     SpaceBetween,
     Spinner,
@@ -19,20 +20,13 @@ import { isRequestFormErrors2, isRequestFormFieldError } from 'libs';
 import { useBackendValuesMutation } from 'services/backend';
 import { GCPCredentialTypeEnum } from 'types';
 
-import { BUCKET_HELP, FIELD_NAMES, REGIONS_HELP, SERVICE_ACCOUNT_HELP, SUBNET_HELP } from './constants';
+import { FIELD_NAMES, PROJECT_ID_HELP, REGIONS_HELP, SERVICE_ACCOUNT_HELP } from './constants';
 
-import { IProps, VPCSubnetOption } from './types';
+import { IProps } from './types';
 
 import styles from './styles.module.scss';
 
-const FIELDS_QUEUE = [
-    FIELD_NAMES.CREDENTIALS.TYPE,
-    FIELD_NAMES.CREDENTIALS.DATA,
-    FIELD_NAMES.REGIONS,
-    FIELD_NAMES.BUCKET_NAME,
-    FIELD_NAMES.VPC,
-    FIELD_NAMES.SUBNET,
-];
+const FIELDS_QUEUE = [FIELD_NAMES.CREDENTIALS.TYPE, FIELD_NAMES.CREDENTIALS.DATA, FIELD_NAMES.REGIONS];
 export const GCPBackend: React.FC<IProps> = ({ loading }) => {
     const { t } = useTranslation();
     const {
@@ -47,8 +41,7 @@ export const GCPBackend: React.FC<IProps> = ({ loading }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [valuesData, setValuesData] = useState<IGCPBackendValues | undefined>();
     const [regionsOptions, setRegionsOptions] = useState<FormMultiselectOptions>([]);
-    const [bucketNameOptions, setBucketNameOptions] = useState<TAwsBucket[]>([]);
-    const [subnetOptions, setSubnetOptions] = useState<VPCSubnetOption[]>([]);
+    const [projectIdOptions, setProjectIdOptions] = useState<FormSelectOptions>([]);
     const [availableDefaultCredentials, setAvailableDefaultCredentials] = useState<boolean | null>(null);
     const requestRef = useRef<null | ReturnType<typeof getBackendValues>>(null);
     const [pushNotification] = useNotifications();
@@ -65,11 +58,11 @@ export const GCPBackend: React.FC<IProps> = ({ loading }) => {
     const changeFormHandler = async () => {
         const formValues = getValues();
 
-        if (formValues?.credentials?.type === GCPCredentialTypeEnum.SERVICE_ACCOUNT && !formValues?.credentials?.data) {
+        if (formValues?.creds?.type === GCPCredentialTypeEnum.SERVICE_ACCOUNT && !formValues?.creds?.data) {
             return;
         }
 
-        if (formValues?.credentials && !formValues.credentials?.type) delete formValues.credentials;
+        if (formValues?.creds && !formValues.creds?.type) delete formValues.creds;
 
         clearErrors();
 
@@ -86,12 +79,12 @@ export const GCPBackend: React.FC<IProps> = ({ loading }) => {
 
             setAvailableDefaultCredentials(response.default_credentials);
             // If default credentials unavailable, set selected client credential option
-            if (!formValues?.credentials?.type && !response.default_credentials) {
+            if (!formValues?.creds?.type && !response.default_creds) {
                 setValue(FIELD_NAMES.CREDENTIALS.TYPE, GCPCredentialTypeEnum.SERVICE_ACCOUNT);
             }
 
             // select authorization option
-            if (!formValues?.credentials?.type) {
+            if (!formValues?.creds?.type) {
                 setValue(
                     FIELD_NAMES.CREDENTIALS.TYPE,
                     response.default_credentials ? GCPCredentialTypeEnum.DEFAULT : GCPCredentialTypeEnum.SERVICE_ACCOUNT,
@@ -108,39 +101,12 @@ export const GCPBackend: React.FC<IProps> = ({ loading }) => {
                 setValue(FIELD_NAMES.REGIONS, response.regions.selected);
             }
 
-            if (response.bucket_name?.values) {
-                const buckets: TAwsBucket[] = response.bucket_name.values.map((valueItem) => ({
-                    name: valueItem.value,
-                }));
-
-                setBucketNameOptions(buckets);
+            if (response.project_id?.values) {
+                setRegionsOptions(response.project_id.values);
             }
 
-            if (response.bucket_name?.selected !== undefined) {
-                setValue(FIELD_NAMES.BUCKET_NAME, response.bucket_name.selected);
-            }
-
-            if (response.vpc_subnet?.values) {
-                // it needs for working form, because options from api doesn't have value property
-                const vpcSubnetOptions: VPCSubnetOption[] = response.vpc_subnet.values.map((i) => ({
-                    ...i,
-                    value: i.label,
-                }));
-
-                setSubnetOptions(vpcSubnetOptions);
-            }
-
-            if (response.vpc_subnet?.selected !== undefined) {
-                setValue(FIELD_NAMES.VPC_SUBNET, response.vpc_subnet.selected);
-
-                const valueItem = response.vpc_subnet.values.find((i) => i.label === response.vpc_subnet?.selected);
-
-                if (!valueItem) return;
-
-                setVPCSubnetFormValue({
-                    vpc: valueItem.vpc,
-                    subnet: valueItem.subnet,
-                });
+            if (response.project_id?.selected !== undefined) {
+                setValue(FIELD_NAMES.PROJECT_ID, response.project_id.selected);
             }
         } catch (errorResponse) {
             console.log('fetch backends values error:', errorResponse);
@@ -203,11 +169,6 @@ export const GCPBackend: React.FC<IProps> = ({ loading }) => {
         onChangeFormField();
     };
 
-    const setVPCSubnetFormValue = ({ vpc, subnet }: { vpc: string; subnet: string }) => {
-        setValue(FIELD_NAMES.VPC, vpc);
-        setValue(FIELD_NAMES.SUBNET, subnet);
-    };
-
     const onChangeCredentialsTypeField = () => {
         clearFieldByQueueFromField(FIELD_NAMES.CREDENTIALS.TYPE);
         onChangeFormField();
@@ -216,21 +177,6 @@ export const GCPBackend: React.FC<IProps> = ({ loading }) => {
     const onChangeCredentialField = () => {
         clearFieldByQueueFromField(FIELD_NAMES.CREDENTIALS.DATA);
         onChangeFormField();
-    };
-
-    const onChangeVPCSubnet = () => {
-        const vpcSubnet = getValues(FIELD_NAMES.VPC_SUBNET);
-
-        if (!vpcSubnet) return;
-
-        const optionItem = subnetOptions.find((i) => i.value === vpcSubnet);
-
-        if (!optionItem) return;
-
-        setVPCSubnetFormValue({
-            vpc: optionItem.vpc,
-            subnet: optionItem.subnet,
-        });
     };
 
     const getDisabledByFieldName = (fieldName: string) => {
@@ -244,9 +190,6 @@ export const GCPBackend: React.FC<IProps> = ({ loading }) => {
         switch (fieldName) {
             case FIELD_NAMES.REGIONS:
                 disabledField = disabledField || !regionsOptions.length;
-                break;
-            case FIELD_NAMES.VPC_SUBNET:
-                disabledField = disabledField || !subnetOptions.length;
                 break;
         }
 
@@ -336,35 +279,15 @@ export const GCPBackend: React.FC<IProps> = ({ loading }) => {
                     secondaryControl={renderSpinner()}
                 />
 
-                <FormS3BucketSelector
-                    info={<InfoLink onFollow={() => openHelpPanel(BUCKET_HELP)} />}
-                    prefix="gs://"
-                    label={t('projects.edit.gcp.bucket_name')}
-                    description={t('projects.edit.gcp.bucket_name_description')}
-                    control={control}
-                    name={FIELD_NAMES.BUCKET_NAME}
-                    selectableItemsTypes={['buckets']}
-                    disabled={getDisabledByFieldName(FIELD_NAMES.BUCKET_NAME)}
-                    rules={{ required: t('validation.required') }}
-                    buckets={bucketNameOptions}
-                    secondaryControl={renderSpinner()}
-                    i18nStrings={{
-                        inContextBrowseButton: 'Choose a bucket',
-                        modalBreadcrumbRootItem: 'Storage buckets',
-                        modalTitle: 'Choose a storage bucket',
-                    }}
-                />
-
                 <FormSelect
-                    info={<InfoLink onFollow={() => openHelpPanel(SUBNET_HELP)} />}
-                    label={t('projects.edit.gcp.subnet')}
-                    description={t('projects.edit.gcp.subnet_description')}
-                    placeholder={t('projects.edit.gcp.subnet_placeholder')}
+                    info={<InfoLink onFollow={() => openHelpPanel(PROJECT_ID_HELP)} />}
+                    label={t('projects.edit.gcp.project_id')}
+                    description={t('projects.edit.gcp.project_id_description')}
+                    placeholder={t('projects.edit.gcp.project_id_placeholder')}
                     control={control}
-                    name={FIELD_NAMES.VPC_SUBNET}
-                    options={subnetOptions}
-                    onChange={onChangeVPCSubnet}
-                    disabled={getDisabledByFieldName(FIELD_NAMES.VPC_SUBNET)}
+                    name={FIELD_NAMES.PROJECT_ID}
+                    options={projectIdOptions}
+                    disabled={getDisabledByFieldName(FIELD_NAMES.PROJECT_ID)}
                     rules={{ required: t('validation.required') }}
                     secondaryControl={renderSpinner()}
                 />

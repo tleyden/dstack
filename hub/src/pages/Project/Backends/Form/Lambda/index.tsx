@@ -1,26 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { debounce, get as _get } from 'lodash';
+import { debounce } from 'lodash';
 
-import {
-    FormInput,
-    FormMultiselect,
-    FormMultiselectOptions,
-    FormS3BucketSelector,
-    FormSelect,
-    FormSelectOptions,
-    InfoLink,
-    SpaceBetween,
-    Spinner,
-} from 'components';
+import { FormInput, FormMultiselect, FormMultiselectOptions, InfoLink, SpaceBetween, Spinner } from 'components';
 
 import { useHelpPanel, useNotifications } from 'hooks';
 import useIsMounted from 'hooks/useIsMounted';
 import { isRequestFormErrors2, isRequestFormFieldError } from 'libs';
 import { useBackendValuesMutation } from 'services/backend';
 
-import { API_KEY_HELP, BUCKET_HELP, CREDENTIALS_HELP, FIELD_NAMES, REGIONS_HELP, STORAGE_HELP } from './constants';
+import { API_KEY_HELP, FIELD_NAMES, REGIONS_HELP } from './constants';
 
 import { IProps } from './types';
 
@@ -32,8 +22,6 @@ export const LambdaBackend: React.FC<IProps> = ({ loading }) => {
     const { control, getValues, setValue, setError, clearErrors } = useFormContext();
     const [valuesData, setValuesData] = useState<IAwsBackendValues | undefined>();
     const [regions, setRegions] = useState<FormMultiselectOptions>([]);
-    const [buckets, setBuckets] = useState<TAwsBucket[]>([]);
-    const [storageBackendType, setStorageBackendType] = useState<FormSelectOptions>([]);
     const lastUpdatedField = useRef<string | null>(null);
     const isFirstRender = useRef<boolean>(true);
     const isMounted = useIsMounted();
@@ -47,16 +35,9 @@ export const LambdaBackend: React.FC<IProps> = ({ loading }) => {
     const changeFormHandler = async () => {
         const formValues = getValues();
 
-        if (!formValues.api_key) {
+        if (!formValues.creds.api_key) {
             return;
         }
-
-        if (
-            formValues?.storage_backend?.credentials &&
-            !_get(formValues, FIELD_NAMES.STORAGE_BACKEND.CREDENTIALS.ACCESS_KEY) &&
-            !_get(formValues, FIELD_NAMES.STORAGE_BACKEND.CREDENTIALS.SECRET_KEY)
-        )
-            formValues.storage_backend.credentials = null;
 
         clearErrors();
 
@@ -78,26 +59,6 @@ export const LambdaBackend: React.FC<IProps> = ({ loading }) => {
 
             if (response.regions?.selected !== undefined) {
                 setValue(FIELD_NAMES.REGIONS, response.regions.selected);
-            }
-
-            if (response.storage_backend_type?.values) {
-                setStorageBackendType(response.storage_backend_type.values);
-            }
-
-            if (response.storage_backend_type?.selected !== undefined) {
-                setValue(FIELD_NAMES.STORAGE_BACKEND.TYPE, response.storage_backend_type.selected);
-            }
-
-            if (response.storage_backend_values?.bucket_name?.values) {
-                const formattedBuckets = response.storage_backend_values.bucket_name.values.map(({ value }) => ({
-                    name: value,
-                }));
-
-                setBuckets(formattedBuckets);
-            }
-
-            if (response.storage_backend_values?.bucket_name?.selected !== undefined) {
-                setValue(FIELD_NAMES.STORAGE_BACKEND.BUCKET_NAME, response.storage_backend_values.bucket_name.selected);
             }
         } catch (errorResponse) {
             console.log('fetch backends values error:', errorResponse);
@@ -182,62 +143,6 @@ export const LambdaBackend: React.FC<IProps> = ({ loading }) => {
                 secondaryControl={renderSpinner()}
                 rules={{ required: t('validation.required') }}
                 options={regions}
-            />
-
-            <FormSelect
-                info={<InfoLink onFollow={() => openHelpPanel(STORAGE_HELP)} />}
-                label={t('projects.edit.lambda.storage_backend.type')}
-                description={t('projects.edit.lambda.storage_backend.type_description')}
-                placeholder={t('projects.edit.lambda.storage_backend.type_placeholder')}
-                control={control}
-                name={FIELD_NAMES.STORAGE_BACKEND.TYPE}
-                disabled={getDisabledByFieldName(FIELD_NAMES.STORAGE_BACKEND.TYPE)}
-                onChange={getOnChangeSelectField(FIELD_NAMES.STORAGE_BACKEND.TYPE)}
-                options={storageBackendType}
-                rules={{ required: t('validation.required') }}
-                secondaryControl={renderSpinner()}
-            />
-
-            <FormInput
-                info={<InfoLink onFollow={() => openHelpPanel(CREDENTIALS_HELP)} />}
-                label={t('projects.edit.lambda.storage_backend.credentials.access_key_id')}
-                description={t('projects.edit.lambda.storage_backend.credentials.access_key_id_description')}
-                control={control}
-                name={FIELD_NAMES.STORAGE_BACKEND.CREDENTIALS.ACCESS_KEY}
-                onChange={onChangeCredentialField}
-                rules={{ required: t('validation.required') }}
-                disabled={getDisabledByFieldName(FIELD_NAMES.STORAGE_BACKEND.CREDENTIALS.ACCESS_KEY)}
-                autoComplete="off"
-            />
-
-            <FormInput
-                info={<InfoLink onFollow={() => openHelpPanel(CREDENTIALS_HELP)} />}
-                label={t('projects.edit.lambda.storage_backend.credentials.secret_key_id')}
-                description={t('projects.edit.lambda.storage_backend.credentials.secret_key_id_description')}
-                control={control}
-                name={FIELD_NAMES.STORAGE_BACKEND.CREDENTIALS.SECRET_KEY}
-                onChange={onChangeCredentialField}
-                rules={{ required: t('validation.required') }}
-                disabled={getDisabledByFieldName(FIELD_NAMES.STORAGE_BACKEND.CREDENTIALS.SECRET_KEY)}
-                autoComplete="off"
-            />
-
-            <FormS3BucketSelector
-                info={<InfoLink onFollow={() => openHelpPanel(BUCKET_HELP)} />}
-                label={t('projects.edit.lambda.storage_backend.s3_bucket_name')}
-                description={t('projects.edit.lambda.storage_backend.s3_bucket_name_description')}
-                control={control}
-                name={FIELD_NAMES.STORAGE_BACKEND.BUCKET_NAME}
-                selectableItemsTypes={['buckets']}
-                disabled={getDisabledByFieldName(FIELD_NAMES.STORAGE_BACKEND.BUCKET_NAME)}
-                rules={{ required: t('validation.required') }}
-                buckets={buckets}
-                secondaryControl={renderSpinner()}
-                i18nStrings={{
-                    inContextBrowseButton: 'Choose a bucket',
-                    modalBreadcrumbRootItem: 'S3 buckets',
-                    modalTitle: 'Choose an S3 bucket',
-                }}
             />
         </SpaceBetween>
     );

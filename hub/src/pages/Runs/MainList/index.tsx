@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { /*get as _get,*/ sortBy as _sortBy, uniqBy as _uniqBy } from 'lodash';
+import { useSearchParams } from 'react-router-dom';
+import { get as _get, sortBy as _sortBy, uniqBy as _uniqBy } from 'lodash';
 
 import {
     Button,
@@ -34,6 +35,7 @@ import styles from './styles.module.scss';
 
 export const List: React.FC = () => {
     const { t } = useTranslation();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [selectedProject, setSelectedProject] = useState<SelectCSDProps.Option | null>(null);
     const [selectedRepo, setSelectedRepo] = useState<SelectCSDProps.Option | null>(null);
     const [onlyActive, setOnlyActive] = useState<boolean>(false);
@@ -61,6 +63,7 @@ export const List: React.FC = () => {
         setSelectedProject(null);
         setSelectedRepo(null);
         setOnlyActive(false);
+        setSearchParams({});
     };
     const renderEmptyMessage = (): React.ReactNode => {
         return (
@@ -128,14 +131,38 @@ export const List: React.FC = () => {
         );
     }, [data]);
 
+    useEffect(() => {
+        const project = searchParams.get('project');
+
+        if (!project || !projectOptions.length) return;
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const selectedOption = projectOptions.find((option) => option?.value === project);
+
+        if (selectedOption) setSelectedProject(selectedOption);
+    }, [searchParams, projectOptions]);
+
     const repoOptions = useMemo<SelectCSDProps.Options>(() => {
         if (!data?.length) return [];
 
         return _uniqBy(
-            data.map((run) => ({ label: run.repo?.repo_info.repo_name ?? 'No repo', value: run.repo?.repo_id ?? '-' })),
+            data.map((run) => ({ label: _get(run.repo?.repo_info, 'repo_name', 'No repo'), value: run.repo?.repo_id ?? '-' })),
             (option) => option.value,
         );
     }, [data]);
+
+    useEffect(() => {
+        const repo = searchParams.get('repo');
+
+        if (!repo || !repoOptions.length) return;
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const selectedOption = repoOptions.find((option) => option?.value === repo);
+
+        if (selectedOption) setSelectedRepo(selectedOption);
+    }, [searchParams, repoOptions]);
 
     const abortClickHandle = () => {
         if (!selectedItems?.length) return;

@@ -1,11 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 
 import { ROUTES } from 'routes';
-import { useDeleteProjectBackendMutation, useGetProjectBackendsQuery } from 'services/backend';
+import { useDeleteProjectBackendMutation } from 'services/backend';
 
-export const useBackendsTable = (projectName: IProject['project_name']) => {
+export const useBackendsTable = (projectName: IProject['project_name'], backends: IProject['backends']) => {
     const navigate = useNavigate();
-    const { data, isLoading } = useGetProjectBackendsQuery({ projectName });
     const [deleteBackendRequest, { isLoading: isDeleting }] = useDeleteProjectBackendMutation();
 
     const editBackend = (backend: IProjectBackend) => {
@@ -15,7 +14,7 @@ export const useBackendsTable = (projectName: IProject['project_name']) => {
     const deleteBackend = (backends: readonly IProjectBackend[] | IProjectBackend[]) => {
         deleteBackendRequest({
             projectName,
-            backends: backends.map((backend) => backend.name),
+            backends_names: backends.map((backend) => backend.name),
         });
     };
 
@@ -23,5 +22,5 @@ export const useBackendsTable = (projectName: IProject['project_name']) => {
         navigate(ROUTES.PROJECT.BACKEND.ADD.FORMAT(projectName));
     };
 
-    return { data, isLoading, isDeleting, editBackend, deleteBackend, addBackend } as const;
+    return { data: backends, isDeleting, editBackend, deleteBackend, addBackend } as const;
 };

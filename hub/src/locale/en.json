@@ -206,15 +206,9 @@
         "regions": "Regions",
         "regions_description": "Select regions to run workflows and store artifacts",
         "regions_placeholder": "Select regions",
-        "bucket_name": "Bucket",
-        "bucket_name_description": "Select a storage bucket to store artifacts",
-        "bucket_name_placeholder": "Not selected",
-        "vpc": "VPC",
-        "vpc_description": "VPC description",
-        "vpc_placeholder": "VPC placeholder",
-        "subnet": "Subnet",
-        "subnet_description": "Select a subnet to run workflows in",
-        "subnet_placeholder": "Not selected"
+        "project_id": "Project Id",
+        "project_id_description": "Select a project id",
+        "project_id_placeholder": "Select a project Id"
       },
       "lambda": {
         "api_key": "API key",

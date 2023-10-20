@@ -20,9 +20,9 @@ export const ROUTES = {
                 FORMAT: (name: string) => buildRoute(ROUTES.PROJECT.DETAILS.REPOSITORIES.TEMPLATE, { name }),
 
                 DETAILS: {
-                    TEMPLATE: `/projects/:name/repositories/:repoId`,
+                    // TEMPLATE: `/projects/:name/repositories/:repoId`,
                     FORMAT: (name: string, repoId: string) =>
-                        buildRoute(ROUTES.PROJECT.DETAILS.REPOSITORIES.DETAILS.TEMPLATE, { name, repoId }),
+                        buildRoute(ROUTES.RUNS.LIST + `?project=${name}&repo=${repoId}`, {}),
                 },
 
                 SETTINGS: {
@@ -37,11 +37,6 @@ export const ROUTES = {
                     TEMPLATE: `/projects/:name/repositories/:repoId/runs/:runName`,
                     FORMAT: (name: string, repoId: string, runName: string) =>
                         buildRoute(ROUTES.PROJECT.DETAILS.RUNS.DETAILS.TEMPLATE, { name, repoId, runName }),
-                },
-                ARTIFACTS: {
-                    TEMPLATE: `/projects/:name/repositories/:repoId/runs/:runName/artifacts`,
-                    FORMAT: (name: string, repoId: string, runName: string) =>
-                        buildRoute(ROUTES.PROJECT.DETAILS.RUNS.ARTIFACTS.TEMPLATE, { name, repoId, runName }),
                 },
             },
 

@@ -1,7 +1,7 @@
-export const runStatusForDeleting: TRunStatus[] = ['failed', 'stopped', 'aborted', 'done'];
-export const runStatusForStopping: TRunStatus[] = ['submitted', 'pending', 'running'];
-export const runStatusForAborting: TRunStatus[] = ['submitted', 'pending', 'running', 'stopping'];
-export const unfinishedRuns: TRunStatus[] = [
+export const runStatusForDeleting: TJobStatus[] = ['failed', 'stopped', 'aborted', 'done'];
+export const runStatusForStopping: TJobStatus[] = ['submitted', 'pending', 'running'];
+export const runStatusForAborting: TJobStatus[] = ['submitted', 'pending', 'running', 'stopping', 'restarting'];
+export const unfinishedRuns: TJobStatus[] = [
     'building',
     'running',
     'uploading',
@@ -10,4 +10,5 @@ export const unfinishedRuns: TRunStatus[] = [
     'stopped',
     'terminating',
     'pending',
+    'restarting',
 ];

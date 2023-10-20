@@ -1,8 +1,9 @@
 
-declare type TProjectBackend = { type: TBackendType } & IBackendAWSWithTitles & IBackendAzure & IBackendGCP & IBackendLambda & IBackendLocal
+declare type TProjectBackend = IBackendAWS & IBackendAzure & IBackendGCP & IBackendLambda & IBackendLocal
 declare interface IProject {
     project_name: string,
-    members: IProjectMember[]
+    members: IProjectMember[],
+    backends: TProjectBackend[]
 }
 
 declare interface IProjectMember {

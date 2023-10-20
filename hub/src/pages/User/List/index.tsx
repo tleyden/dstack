@@ -42,7 +42,7 @@ export const UserList: React.FC = () => {
             id: 'name',
             header: t('users.user_name'),
             cell: (item: IUser) => (
-                <NavigateLink href={ROUTES.USER.DETAILS.FORMAT(item.user_name)}>{item.user_name}</NavigateLink>
+                <NavigateLink href={ROUTES.USER.DETAILS.FORMAT(item.username)}>{item.username}</NavigateLink>
             ),
         },
         {

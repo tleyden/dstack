@@ -13,7 +13,6 @@ import {
     Header,
     Loader,
     StatusIndicator,
-    Tabs,
     TabsProps,
 } from 'components';
 
@@ -29,15 +28,9 @@ import { isAvailableAbortingForRun, isAvailableDeletingForRun, isAvailableStoppi
 
 import styles from './styles.module.scss';
 
-enum TabTypesEnum {
-    LOGS = 'logs',
-    ARTIFACTS = 'artifacts',
-}
-
 export const RunDetails: React.FC = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { pathname } = useLocation();
     const params = useParams();
     const paramProjectName = params.name ?? '';
     const paramRepoId = params.repoId ?? '';
@@ -86,34 +79,6 @@ export const RunDetails: React.FC = () => {
             href: ROUTES.PROJECT.DETAILS.RUNS.DETAILS.FORMAT(paramProjectName, paramRepoId, paramRunName),
         },
     ]);
-
-    const tabs: {
-        label: string;
-        id: TabTypesEnum;
-        href: string;
-    }[] = [
-        {
-            label: t('projects.run.log'),
-            id: TabTypesEnum.LOGS,
-            href: ROUTES.PROJECT.DETAILS.RUNS.DETAILS.FORMAT(paramProjectName, paramRepoId, paramRunName),
-        },
-        {
-            label: t('projects.run.artifacts'),
-            id: TabTypesEnum.ARTIFACTS,
-            href: ROUTES.PROJECT.DETAILS.RUNS.ARTIFACTS.FORMAT(paramProjectName, paramRepoId, paramRunName),
-        },
-    ];
-
-    const onChangeTab: TabsProps['onChange'] = ({ detail }) => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        navigate(detail.activeTabHref!);
-    };
-
-    const activeTabId = useMemo(() => {
-        const tab = tabs.find((t) => pathname === t.href);
-
-        return tab?.id;
-    }, [pathname]);
 
     const abortClickHandle = () => {
         stopRun({
@@ -240,8 +205,6 @@ export const RunDetails: React.FC = () => {
                         </ColumnLayout>
                     </Container>
                 )}
-
-                <Tabs onChange={onChangeTab} activeTabId={activeTabId} tabs={tabs} />
 
                 <Outlet />
             </ContentLayout>

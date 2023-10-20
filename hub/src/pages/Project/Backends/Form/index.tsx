@@ -55,8 +55,6 @@ export const BackendForm: React.FC<IProps> = ({ initialValues, onCancel, loading
     }, [backendTypesData, initialValues, loading]);
 
     const onSubmit = (data: TBackendConfig) => {
-        if (data.type === 'aws' && data.ec2_subnet_id === '') data.ec2_subnet_id = null;
-
         clearErrors();
 
         onSubmitProp(data).catch((errorResponse) => {

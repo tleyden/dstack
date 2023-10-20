@@ -1,17 +1,8 @@
 import { API } from 'api';
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-import fetchBaseQueryHeaders from 'libs/fetchBaseQueryHeaders';
+import { projectApi } from './project';
 
-export const backendApi = createApi({
-    reducerPath: 'backendApi',
-    baseQuery: fetchBaseQuery({
-        prepareHeaders: fetchBaseQueryHeaders,
-    }),
-
-    tagTypes: ['Backends'],
-
+export const extendedProjectApi = projectApi.injectEndpoints({
     endpoints: (builder) => ({
         getBackendTypes: builder.query<TBackendType[], void>({
             query: () => ({
@@ -27,7 +18,7 @@ export const backendApi = createApi({
                 body: config,
             }),
 
-            invalidatesTags: () => ['Backends'],
+            invalidatesTags: (result, error, arg) => [{ type: 'Projects' as const, id: arg.projectName }],
         }),
 
         updateBackend: builder.mutation<TBackendConfig, { projectName: IProject['project_name']; config: TBackendConfig }>({
@@ -37,7 +28,10 @@ export const backendApi = createApi({
                 body: config,
             }),
 
-            invalidatesTags: (result) => [{ type: 'Backends' as const, id: result?.type }],
+            invalidatesTags: (result, error, arg) => [
+                { type: 'Projects' as const, id: arg.projectName },
+                { type: 'Backends' as const, id: result?.type },
+            ],
         }),
 
         backendValues: builder.mutation<TBackendValuesResponse, Partial<TBackendConfig>>({
@@ -49,7 +43,7 @@ export const backendApi = createApi({
         }),
 
         getBackendConfig: builder.query<
-            IProjectBackend,
+            TBackendConfig,
             { projectName: IProject['project_name']; backendName: IProjectBackend['name'] }
         >({
             query: ({ projectName, backendName }) => {
@@ -59,7 +53,7 @@ export const backendApi = createApi({
                 };
             },
 
-            providesTags: (result) => (result ? [{ type: 'Backends' as const, id: result.name }] : []),
+            providesTags: (result, error, arg) => (result ? [{ type: 'Backends' as const, id: arg.backendName }] : []),
         }),
 
         getProjectBackends: builder.query<IProjectBackend[], { projectName: IProject['project_name'] }>({
@@ -76,15 +70,15 @@ export const backendApi = createApi({
 
         deleteProjectBackend: builder.mutation<
             void,
-            { projectName: IProject['project_name']; backends: IProjectBackend['name'][] }
+            { projectName: IProject['project_name']; backends_names: IProjectBackend['name'][] }
         >({
-            query: ({ projectName, backends }) => ({
+            query: ({ projectName, backends_names }) => ({
                 url: API.PROJECT_BACKENDS.DELETE(projectName),
                 method: 'POST',
-                body: { backends },
+                body: { backends_names },
             }),
 
-            invalidatesTags: () => ['Backends'],
+            invalidatesTags: (result, error, arg) => [{ type: 'Projects' as const, id: arg.projectName }, { type: 'Backends' }],
         }),
     }),
 });
@@ -96,5 +90,4 @@ export const {
     useBackendValuesMutation,
     useGetBackendConfigQuery,
     useUpdateBackendMutation,
-    useGetProjectBackendsQuery,
-} = backendApi;
+} = extendedProjectApi;

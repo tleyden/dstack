@@ -3,17 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { debounce } from 'lodash';
 
-import {
-    FormInput,
-    FormMultiselect,
-    FormMultiselectOptions,
-    FormS3BucketSelector,
-    FormSelect,
-    FormSelectOptions,
-    InfoLink,
-    SpaceBetween,
-    Spinner,
-} from 'components';
+import { FormInput, FormMultiselect, FormMultiselectOptions, FormSelect, InfoLink, SpaceBetween, Spinner } from 'components';
 
 import { useHelpPanel, useNotifications } from 'hooks';
 import useIsMounted from 'hooks/useIsMounted';
@@ -21,7 +11,7 @@ import { isRequestFormErrors2, isRequestFormFieldError } from 'libs';
 import { useBackendValuesMutation } from 'services/backend';
 import { AWSCredentialTypeEnum } from 'types';
 
-import { BUCKET_HELP, CREDENTIALS_HELP, FIELD_NAMES, REGIONS_HELP, SUBNET_HELP } from './constants';
+import { CREDENTIALS_HELP, FIELD_NAMES, REGIONS_HELP } from './constants';
 
 import { IProps } from './types';
 
@@ -33,8 +23,6 @@ export const AWSBackend: React.FC<IProps> = ({ loading }) => {
     const { control, getValues, setValue, setError, clearErrors, watch } = useFormContext();
     const [valuesData, setValuesData] = useState<IAwsBackendValues | undefined>();
     const [regions, setRegions] = useState<FormMultiselectOptions>([]);
-    const [buckets, setBuckets] = useState<TAwsBucket[]>([]);
-    const [subnets, setSubnets] = useState<FormSelectOptions>([]);
     const [availableDefaultCredentials, setAvailableDefaultCredentials] = useState<null | boolean>(null);
     const lastUpdatedField = useRef<string | null>(null);
     const isFirstRender = useRef<boolean>(true);
@@ -54,14 +42,14 @@ export const AWSBackend: React.FC<IProps> = ({ loading }) => {
         let formValues = getValues();
 
         if (
-            formValues.credentials?.type === AWSCredentialTypeEnum.ACCESS_KEY &&
-            (!formValues.credentials?.secret_key || !formValues.credentials?.access_key)
+            formValues.creds?.type === AWSCredentialTypeEnum.ACCESS_KEY &&
+            (!formValues.creds?.secret_key || !formValues.creds?.access_key)
         ) {
             return;
         }
 
-        if (!formValues.credentials?.type) {
-            const { credentials, ...otherValues } = formValues;
+        if (!formValues.creds?.type) {
+            const { creds, ...otherValues } = formValues;
 
             formValues = otherValues;
         }
@@ -80,16 +68,16 @@ export const AWSBackend: React.FC<IProps> = ({ loading }) => {
 
             lastUpdatedField.current = null;
 
-            setAvailableDefaultCredentials(response.default_credentials);
+            setAvailableDefaultCredentials(response.default_creds);
 
             // select authorization option
-            if (!formValues?.credentials?.type) {
+            if (!formValues?.creds?.type) {
                 setValue(
                     FIELD_NAMES.CREDENTIALS.TYPE,
-                    response.default_credentials ? AWSCredentialTypeEnum.DEFAULT : AWSCredentialTypeEnum.ACCESS_KEY,
+                    response.default_creds ? AWSCredentialTypeEnum.DEFAULT : AWSCredentialTypeEnum.ACCESS_KEY,
                 );
 
-                if (response.default_credentials) changeFormHandler().catch(console.log);
+                if (response.default_creds) changeFormHandler().catch(console.log);
             }
 
             if (response.regions?.values) {
@@ -98,22 +86,6 @@ export const AWSBackend: React.FC<IProps> = ({ loading }) => {
 
             if (response.regions?.selected !== undefined) {
                 setValue(FIELD_NAMES.REGIONS, response.regions.selected);
-            }
-
-            if (response.s3_bucket_name?.values) {
-                setBuckets(response.s3_bucket_name.values);
-            }
-
-            if (response.s3_bucket_name?.selected !== undefined) {
-                setValue(FIELD_NAMES.S3_BUCKET_NAME, response.s3_bucket_name.selected);
-            }
-
-            if (response.ec2_subnet_id?.values) {
-                setSubnets([{ value: '', label: 'No preference' }, ...response.ec2_subnet_id.values]);
-            }
-
-            if (response.ec2_subnet_id?.selected !== undefined) {
-                setValue(FIELD_NAMES.EC2_SUBNET_ID, response.ec2_subnet_id.selected ?? '');
             }
         } catch (errorResponse) {
             console.log('fetch backends values error:', errorResponse);
@@ -237,37 +209,6 @@ export const AWSBackend: React.FC<IProps> = ({ loading }) => {
                 disabled={getDisabledByFieldName(FIELD_NAMES.REGIONS)}
                 secondaryControl={renderSpinner()}
                 options={regions}
-            />
-
-            <FormS3BucketSelector
-                info={<InfoLink onFollow={() => openHelpPanel(BUCKET_HELP)} />}
-                label={t('projects.edit.aws.s3_bucket_name')}
-                description={t('projects.edit.aws.s3_bucket_name_description')}
-                control={control}
-                name={FIELD_NAMES.S3_BUCKET_NAME}
-                selectableItemsTypes={['buckets']}
-                disabled={getDisabledByFieldName(FIELD_NAMES.S3_BUCKET_NAME)}
-                rules={{ required: t('validation.required') }}
-                buckets={buckets}
-                secondaryControl={renderSpinner()}
-                i18nStrings={{
-                    inContextBrowseButton: 'Choose a bucket',
-                    modalBreadcrumbRootItem: 'S3 buckets',
-                    modalTitle: 'Choose an S3 bucket',
-                }}
-            />
-
-            <FormSelect
-                info={<InfoLink onFollow={() => openHelpPanel(SUBNET_HELP)} />}
-                label={t('projects.edit.aws.ec2_subnet_id')}
-                description={t('projects.edit.aws.ec2_subnet_id_description')}
-                placeholder={t('projects.edit.aws.ec2_subnet_id_placeholder')}
-                control={control}
-                name={FIELD_NAMES.EC2_SUBNET_ID}
-                disabled={getDisabledByFieldName(FIELD_NAMES.EC2_SUBNET_ID)}
-                onChange={getOnChangeSelectField(FIELD_NAMES.EC2_SUBNET_ID)}
-                options={subnets}
-                secondaryControl={renderSpinner()}
             />
         </SpaceBetween>
     );

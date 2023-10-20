@@ -22,8 +22,8 @@ import { isRequestFormErrors2, isRequestFormFieldError } from 'libs';
 import { ROUTES } from 'routes';
 import {
     useGetProjectGatewayQuery,
-    useTestProjectGatewayDomainMutation,
-    useUpdateProjectGatewayMutation,
+    // useTestProjectGatewayDomainMutation,
+    // useUpdateProjectGatewayMutation,
 } from 'services/gateway';
 
 import { WILDCARD_DOMAIN_HELP } from './constants';
@@ -51,10 +51,9 @@ export const EditGateway: React.FC = () => {
         instanceName: paramInstanceName,
     });
 
-    const [updateGateway, { isLoading: isUpdating }] = useUpdateProjectGatewayMutation();
-    const [testDomain, { isLoading: isTesting }] = useTestProjectGatewayDomainMutation();
+    // const [updateGateway, { isLoading: isUpdating }] = useUpdateProjectGatewayMutation();
 
-    const { handleSubmit, control, setError, clearErrors, watch, getValues, setValue } = useForm<TUpdateGatewayParams>({
+    const { handleSubmit, control, watch, setValue } = useForm<TUpdateGatewayParams>({
         defaultValues: { [FIELD_NAMES.DEFAULT]: false },
     });
     const domainFieldValue = watch(FIELD_NAMES.WILDCARD_DOMAIN);
@@ -65,6 +64,8 @@ export const EditGateway: React.FC = () => {
             setValue(FIELD_NAMES.WILDCARD_DOMAIN, data.head.wildcard_domain);
         }
     }, [data]);
+
+    const isUpdating = false;
 
     const isDisabledFields = isUpdating || isLoadingGateway;
 
@@ -87,85 +88,53 @@ export const EditGateway: React.FC = () => {
         },
     ]);
 
-    const onTest = () => {
-        clearErrors(FIELD_NAMES.WILDCARD_DOMAIN);
-
-        testDomain({
-            projectName: paramProjectName,
-            instanceName: paramInstanceName,
-            domain: getValues(FIELD_NAMES.WILDCARD_DOMAIN) as string,
-        })
-            .unwrap()
-            .then(() =>
-                pushNotification({
-                    type: 'success',
-                    content: t('gateway.test_domain.success_notification'),
-                }),
-            )
-            .catch((errorResponse) => {
-                const errorRequestData = errorResponse?.data;
-
-                if (isRequestFormErrors2(errorRequestData)) {
-                    setError(FIELD_NAMES.WILDCARD_DOMAIN, {
-                        type: 'custom',
-                        message: errorRequestData.detail[0].msg,
-                    });
-                } else {
-                    pushNotification({
-                        type: 'error',
-                        content: t('common.server_error', {
-                            error: errorRequestData?.detail?.msg,
-                        }),
-                    });
-                }
-            });
-    };
+    const onTest = () => {};
 
     const onCancel = () => {
         navigate(ROUTES.PROJECT.DETAILS.SETTINGS.FORMAT(paramProjectName));
     };
 
     const onSubmit = (values: TUpdateGatewayParams) => {
-        updateGateway({
-            projectName: paramProjectName,
-            instanceName: paramInstanceName,
-            values,
-        })
-            .unwrap()
-            .then(() => {
-                pushNotification({
-                    type: 'success',
-                    content: t('gateway.update.success_notification'),
-                });
-
-                navigate(ROUTES.PROJECT.DETAILS.SETTINGS.FORMAT(paramProjectName));
-            })
-            .catch((errorResponse) => {
-                const errorRequestData = errorResponse?.data;
-
-                if (isRequestFormErrors2(errorRequestData)) {
-                    errorRequestData.detail.forEach((error) => {
-                        if (isRequestFormFieldError(error)) {
-                            setError(error.loc.join('.') as FieldPath<TUpdateGatewayParams>, {
-                                type: 'custom',
-                                message: error.msg,
-                            });
-                        } else {
-                            pushNotification({
-                                type: 'error',
-                                content: t('common.server_error', { error: error.msg }),
-                            });
-                        }
-                    });
-                } else {
-                    pushNotification({
-                        type: 'error',
-                        content: t('common.server_error', {
-                            error: errorResponse?.data?.detail?.map((i: { msg: string }) => i.msg).join(', '),
-                        }),
-                    });
-                }
-            });
+        // updateGateway({
+        //     projectName: paramProjectName,
+        //     instanceName: paramInstanceName,
+        //     values,
+        // })
+        //     .unwrap()
+        //     .then(() => {
+        //         pushNotification({
+        //             type: 'success',
+        //             content: t('gateway.update.success_notification'),
+        //         });
+        //
+        //         navigate(ROUTES.PROJECT.DETAILS.SETTINGS.FORMAT(paramProjectName));
+        //     })
+        //     .catch((errorResponse) => {
+        //         const errorRequestData = errorResponse?.data;
+        //
+        //         if (isRequestFormErrors2(errorRequestData)) {
+        //             errorRequestData.detail.forEach((error) => {
+        //                 if (isRequestFormFieldError(error)) {
+        //                     setError(error.loc.join('.') as FieldPath<TUpdateGatewayParams>, {
+        //                         type: 'custom',
+        //                         message: error.msg,
+        //                     });
+        //                 } else {
+        //                     pushNotification({
+        //                         type: 'error',
+        //                         content: t('common.server_error', { error: error.msg }),
+        //                     });
+        //                 }
+        //             });
+        //         } else {
+        //             pushNotification({
+        //                 type: 'error',
+        //                 content: t('common.server_error', {
+        //                     error: errorResponse?.data?.detail?.map((i: { msg: string }) => i.msg).join(', '),
+        //                 }),
+        //             });
+        //         }
+        //     });
     };
 
     const renderSpinner = () => {
@@ -182,11 +151,11 @@ export const EditGateway: React.FC = () => {
             <FormUI
                 actions={
                     <SpaceBetween direction="horizontal" size="xs">
-                        <Button formAction="none" disabled={isUpdating || isTesting} variant="link" onClick={onCancel}>
+                        <Button formAction="none" disabled={isUpdating} variant="link" onClick={onCancel}>
                             {t('common.cancel')}
                         </Button>
 
-                        <Button loading={isUpdating} disabled={isUpdating || isTesting} variant="primary">
+                        <Button loading={isUpdating} disabled={isUpdating} variant="primary">
                             {t('common.save')}
                         </Button>
                     </SpaceBetween>
@@ -234,7 +203,7 @@ export const EditGateway: React.FC = () => {
                                 }}
                                 secondaryControl={
                                     renderSpinner() ?? (
-                                        <Button formAction="none" disabled={isTesting || !domainFieldValue} onClick={onTest}>
+                                        <Button formAction="none" disabled={!domainFieldValue} onClick={onTest}>
                                             {t('common.test')}
                                         </Button>
                                     )
