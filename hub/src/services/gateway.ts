@@ -21,14 +21,11 @@ export const gatewayApi = createApi({
 
             providesTags: (result) =>
                 result
-                    ? [...result.map((gateway) => ({ type: 'Gateways' as const, id: gateway.head.instance_name })), 'Gateways']
+                    ? [...result.map((gateway) => ({ type: 'Gateways' as const, id: gateway.name })), 'Gateways']
                     : ['Gateways'],
         }),
 
-        getProjectGateway: builder.query<
-            IGateway,
-            { projectName: IProject['project_name']; instanceName: IGateway['head']['instance_name'] }
-        >({
+        getProjectGateway: builder.query<IGateway, { projectName: IProject['project_name']; instanceName: IGateway['name'] }>({
             query: ({ projectName, instanceName }) => ({
                 url: API.PROJECT_GATEWAYS.DETAILS(projectName),
                 method: 'POST',
@@ -37,17 +34,7 @@ export const gatewayApi = createApi({
                 },
             }),
 
-            providesTags: (result) =>
-                result ? [{ type: 'Gateways' as const, id: result.head.instance_name }, 'Gateways'] : ['Gateways'],
-        }),
-
-        getProjectGatewayBackends: builder.query<TGatewayBackendsListResponse, { projectName: IProject['project_name'] }>({
-            query: ({ projectName }) => ({
-                url: API.PROJECT_GATEWAYS.LIST(projectName),
-                method: 'GET',
-            }),
-
-            providesTags: ['Backends'],
+            providesTags: (result) => (result ? [{ type: 'Gateways' as const, id: result.name }, 'Gateways'] : ['Gateways']),
         }),
 
         createProjectGateway: builder.mutation<
@@ -63,56 +50,61 @@ export const gatewayApi = createApi({
             invalidatesTags: () => ['Gateways'],
         }),
 
-        deleteProjectGateway: builder.mutation<IGateway, { projectName: IProject['project_name']; instance_names: string[] }>({
-            query: ({ projectName, instance_names }) => ({
+        deleteProjectGateway: builder.mutation<void, { projectName: IProject['project_name']; names: string[] }>({
+            query: ({ projectName, names }) => ({
                 url: API.PROJECT_GATEWAYS.DELETE(projectName),
                 method: 'POST',
-                body: { instance_names },
+                body: { names },
             }),
 
             invalidatesTags: () => ['Gateways'],
         }),
 
-        // updateProjectGateway: builder.mutation<
-        //     IGateway,
-        //     {
-        //         projectName: IProject['project_name'];
-        //         instanceName: IGateway['head']['instance_name'];
-        //         values: TUpdateGatewayParams;
-        //     }
-        // >({
-        //     query: ({ projectName, instanceName, values }) => ({
-        //         url: API.PROJECT_GATEWAYS.UPDATE(projectName, instanceName),
-        //         method: 'POST',
-        //         body: values,
-        //     }),
-        //
-        //     invalidatesTags: (result, _, { instanceName }) => [{ type: 'Gateways' as const, id: instanceName }, 'Gateways'],
-        // }),
-        //
-        // testProjectGatewayDomain: builder.mutation<
-        //     IGateway,
-        //     {
-        //         projectName: IProject['project_name'];
-        //         instanceName: IGateway['head']['instance_name'];
-        //         domain: string;
-        //     }
-        // >({
-        //     query: ({ projectName, instanceName, domain }) => ({
-        //         url: API.PROJECT_GATEWAYS.TEST_DOMAIN(projectName, instanceName),
-        //         method: 'POST',
-        //         body: { domain },
-        //     }),
-        // }),
+        setDefaultProjectGateway: builder.mutation<
+            IGateway,
+            {
+                projectName: IProject['project_name'];
+                name: IGateway['name'];
+            }
+        >({
+            query: ({ projectName, name }) => ({
+                url: API.PROJECT_GATEWAYS.SET_DEFAULT(projectName),
+                method: 'POST',
+                body: {
+                    name,
+                },
+            }),
+
+            invalidatesTags: (result, _, { name }) => [{ type: 'Gateways' as const, id: name }, 'Gateways'],
+        }),
+
+        setWildcardDomainOfGateway: builder.mutation<
+            IGateway,
+            {
+                projectName: IProject['project_name'];
+                name: IGateway['name'];
+                wildcard_domain?: IGateway['wildcard_domain'];
+            }
+        >({
+            query: ({ projectName, name, wildcard_domain }) => ({
+                url: API.PROJECT_GATEWAYS.SET_WILDCARD_DOMAIN(projectName),
+                method: 'POST',
+                body: {
+                    name,
+                    wildcard_domain,
+                },
+            }),
+
+            invalidatesTags: (result, _, { name }) => [{ type: 'Gateways' as const, id: name }, 'Gateways'],
+        }),
     }),
 });
 
 export const {
     useGetProjectGatewaysQuery,
     useGetProjectGatewayQuery,
-    useGetProjectGatewayBackendsQuery,
     useCreateProjectGatewayMutation,
     useDeleteProjectGatewayMutation,
-    // useUpdateProjectGatewayMutation,
-    // useTestProjectGatewayDomainMutation,
+    useSetDefaultProjectGatewayMutation,
+    useSetWildcardDomainOfGatewayMutation,
 } = gatewayApi;

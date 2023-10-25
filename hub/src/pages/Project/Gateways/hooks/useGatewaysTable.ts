@@ -9,13 +9,13 @@ export const useGatewaysTable = (projectName: IProject['project_name']) => {
     const [deleteGatewayRequest, { isLoading: isDeleting }] = useDeleteProjectGatewayMutation();
 
     const editGateway = (gateway: IGateway) => {
-        navigate(ROUTES.PROJECT.GATEWAY.EDIT.FORMAT(projectName, gateway.head.instance_name));
+        navigate(ROUTES.PROJECT.GATEWAY.EDIT.FORMAT(projectName, gateway.name));
     };
 
     const deleteGateway = (gateways: readonly IGateway[] | IGateway[]) => {
         deleteGatewayRequest({
             projectName,
-            instance_names: gateways.map((gateway) => gateway.head.instance_name),
+            names: gateways.map((gateway) => gateway.name),
         });
     };
 

@@ -2,21 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
+import { get as _get } from 'lodash';
 
 import { Button, Container, FormSelect, FormSelectOptions, FormUI, Header, SpaceBetween, Spinner } from 'components';
 
 import { useBreadcrumbs, useNotifications } from 'hooks';
+import { isRequestFormErrors2, isRequestFormFieldError } from 'libs';
 import { ROUTES } from 'routes';
-import { useCreateProjectGatewayMutation, useGetProjectGatewayBackendsQuery } from 'services/gateway';
-
-import { isRequestFormErrors2, isRequestFormFieldError } from '../../../../libs';
+import { useCreateProjectGatewayMutation } from 'services/gateway';
+import { useGetProjectQuery } from 'services/project';
 
 import { FieldPath } from 'react-hook-form/dist/types/path';
 
 import styles from './styles.module.scss';
 
 const FIELD_NAMES: Record<string, keyof TCreateGatewayParams> = {
-    BACKEND: 'backend',
+    BACKEND: 'backend_type',
     REGION: 'region',
 };
 
@@ -29,9 +30,7 @@ export const AddGateway: React.FC = () => {
     const [pushPermanentNotification] = useNotifications({ temporary: false });
     const [regionOptions, setRegionOptions] = useState<FormSelectOptions>([]);
 
-    const { data, isLoading: isLoadingBackends } = useGetProjectGatewayBackendsQuery({
-        projectName: paramProjectName,
-    });
+    const { data, isLoading: isLoadingBackends } = useGetProjectQuery({ name: paramProjectName });
 
     const [createGateway, { isLoading: isCreating }] = useCreateProjectGatewayMutation();
 
@@ -60,15 +59,20 @@ export const AddGateway: React.FC = () => {
         },
     ]);
 
-    const backendOptions: FormSelectOptions = data?.map((i) => ({ label: i.backend, value: i.backend })) ?? [];
+    const backendOptions: FormSelectOptions = data?.backends.map((i) => ({ label: i.name, value: i.name })) ?? [];
 
     useEffect(() => {
         if (data && backendFormValue) {
-            const backend = data.find((b) => b.backend === backendFormValue)!;
+            const backend = data.backends.find((b) => b.name === backendFormValue);
 
-            setRegionOptions(backend.regions.map((region) => ({ label: region, value: region })));
+            setRegionOptions(() => {
+                if (!backend) return [];
 
-            setValue(FIELD_NAMES.REGION, backend.regions[0]);
+                const regions = _get(backend.config, 'regions', _get(backend.config, 'locations', []));
+                setValue(FIELD_NAMES.REGION, regions[0]);
+
+                return regions.map((region) => ({ label: region, value: region }));
+            });
         } else {
             setRegionOptions([]);
         }
@@ -95,7 +99,7 @@ export const AddGateway: React.FC = () => {
                     content: t('gateway.create.success_notification'),
                 });
 
-                navigate(ROUTES.PROJECT.GATEWAY.EDIT.FORMAT(paramProjectName, response.head.instance_name));
+                navigate(ROUTES.PROJECT.GATEWAY.EDIT.FORMAT(paramProjectName, response.name));
             })
             .catch((errorResponse) => {
                 const errorRequestData = errorResponse?.data;

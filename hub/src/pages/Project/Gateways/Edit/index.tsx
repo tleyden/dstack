@@ -22,8 +22,8 @@ import { isRequestFormErrors2, isRequestFormFieldError } from 'libs';
 import { ROUTES } from 'routes';
 import {
     useGetProjectGatewayQuery,
-    // useTestProjectGatewayDomainMutation,
-    // useUpdateProjectGatewayMutation,
+    useSetDefaultProjectGatewayMutation,
+    useSetWildcardDomainOfGatewayMutation,
 } from 'services/gateway';
 
 import { WILDCARD_DOMAIN_HELP } from './constants';
@@ -51,21 +51,21 @@ export const EditGateway: React.FC = () => {
         instanceName: paramInstanceName,
     });
 
-    // const [updateGateway, { isLoading: isUpdating }] = useUpdateProjectGatewayMutation();
+    const [setDefault, { isLoading: isSettingDefault }] = useSetDefaultProjectGatewayMutation();
+    const [setWildcardDomainOfGateway, { isLoading: isUpdating }] = useSetWildcardDomainOfGatewayMutation();
 
-    const { handleSubmit, control, watch, setValue } = useForm<TUpdateGatewayParams>({
+    const { handleSubmit, control, watch, setValue, setError } = useForm<TUpdateGatewayParams>({
         defaultValues: { [FIELD_NAMES.DEFAULT]: false },
     });
-    const domainFieldValue = watch(FIELD_NAMES.WILDCARD_DOMAIN);
+
+    const isDefault = watch(FIELD_NAMES.DEFAULT);
 
     useEffect(() => {
         if (data) {
             setValue(FIELD_NAMES.DEFAULT, data.default);
-            setValue(FIELD_NAMES.WILDCARD_DOMAIN, data.head.wildcard_domain);
+            setValue(FIELD_NAMES.WILDCARD_DOMAIN, data.wildcard_domain);
         }
     }, [data]);
-
-    const isUpdating = false;
 
     const isDisabledFields = isUpdating || isLoadingGateway;
 
@@ -88,57 +88,67 @@ export const EditGateway: React.FC = () => {
         },
     ]);
 
-    const onTest = () => {};
-
     const onCancel = () => {
         navigate(ROUTES.PROJECT.DETAILS.SETTINGS.FORMAT(paramProjectName));
     };
 
-    const onSubmit = (values: TUpdateGatewayParams) => {
-        // updateGateway({
-        //     projectName: paramProjectName,
-        //     instanceName: paramInstanceName,
-        //     values,
-        // })
-        //     .unwrap()
-        //     .then(() => {
-        //         pushNotification({
-        //             type: 'success',
-        //             content: t('gateway.update.success_notification'),
-        //         });
-        //
-        //         navigate(ROUTES.PROJECT.DETAILS.SETTINGS.FORMAT(paramProjectName));
-        //     })
-        //     .catch((errorResponse) => {
-        //         const errorRequestData = errorResponse?.data;
-        //
-        //         if (isRequestFormErrors2(errorRequestData)) {
-        //             errorRequestData.detail.forEach((error) => {
-        //                 if (isRequestFormFieldError(error)) {
-        //                     setError(error.loc.join('.') as FieldPath<TUpdateGatewayParams>, {
-        //                         type: 'custom',
-        //                         message: error.msg,
-        //                     });
-        //                 } else {
-        //                     pushNotification({
-        //                         type: 'error',
-        //                         content: t('common.server_error', { error: error.msg }),
-        //                     });
-        //                 }
-        //             });
-        //         } else {
-        //             pushNotification({
-        //                 type: 'error',
-        //                 content: t('common.server_error', {
-        //                     error: errorResponse?.data?.detail?.map((i: { msg: string }) => i.msg).join(', '),
-        //                 }),
-        //             });
-        //         }
-        //     });
+    const onChangeDefault = () => {
+        setDefault({
+            projectName: paramProjectName,
+            name: paramInstanceName,
+        })
+            .unwrap()
+            .then(() => {
+                pushNotification({
+                    type: 'success',
+                    content: t('gateway.update.success_notification'),
+                });
+            });
     };
 
-    const renderSpinner = () => {
-        if (isLoadingGateway)
+    const onSubmit = ({ wildcard_domain }: TUpdateGatewayParams) => {
+        setWildcardDomainOfGateway({
+            projectName: paramProjectName,
+            name: paramInstanceName,
+            wildcard_domain,
+        })
+            .unwrap()
+            .then(() => {
+                pushNotification({
+                    type: 'success',
+                    content: t('gateway.update.success_notification'),
+                });
+            })
+            .catch((errorResponse) => {
+                const errorRequestData = errorResponse?.data;
+
+                if (isRequestFormErrors2(errorRequestData)) {
+                    errorRequestData.detail.forEach((error) => {
+                        if (isRequestFormFieldError(error)) {
+                            setError(error.loc.join('.') as FieldPath<TUpdateGatewayParams>, {
+                                type: 'custom',
+                                message: error.msg,
+                            });
+                        } else {
+                            pushNotification({
+                                type: 'error',
+                                content: t('common.server_error', { error: error.msg }),
+                            });
+                        }
+                    });
+                } else {
+                    pushNotification({
+                        type: 'error',
+                        content: t('common.server_error', {
+                            error: errorResponse?.data?.detail?.map((i: { msg: string }) => i.msg).join(', '),
+                        }),
+                    });
+                }
+            });
+    };
+
+    const renderSpinner = (force?: boolean) => {
+        if (isLoadingGateway || force)
             return (
                 <div className={styles.fieldSpinner}>
                     <Spinner />
@@ -154,10 +164,6 @@ export const EditGateway: React.FC = () => {
                         <Button formAction="none" disabled={isUpdating} variant="link" onClick={onCancel}>
                             {t('common.cancel')}
                         </Button>
-
-                        <Button loading={isUpdating} disabled={isUpdating} variant="primary">
-                            {t('common.save')}
-                        </Button>
                     </SpaceBetween>
                 }
             >
@@ -169,11 +175,11 @@ export const EditGateway: React.FC = () => {
                             </FormField>
 
                             <FormField label={t('gateway.edit.region')} secondaryControl={renderSpinner()}>
-                                <InputCSD readOnly disabled={isDisabledFields} value={data?.head.region ?? ''} />
+                                <InputCSD readOnly disabled={isDisabledFields} value={data?.region ?? ''} />
                             </FormField>
 
                             <FormField label={t('gateway.edit.external_ip')} secondaryControl={renderSpinner()}>
-                                <InputCSD readOnly disabled={isDisabledFields} value={data?.head.external_ip ?? ''} />
+                                <InputCSD readOnly disabled={isDisabledFields} value={data?.ip_address ?? ''} />
                             </FormField>
 
                             <FormCheckbox
@@ -181,8 +187,9 @@ export const EditGateway: React.FC = () => {
                                 checkboxLabel={t('gateway.edit.default_checkbox')}
                                 control={control}
                                 name={FIELD_NAMES.DEFAULT}
-                                disabled={isDisabledFields}
-                                secondaryControl={renderSpinner()}
+                                disabled={!!isDefault || isSettingDefault}
+                                secondaryControl={renderSpinner(isSettingDefault)}
+                                onChange={onChangeDefault}
                             />
 
                             <FormInput
@@ -203,8 +210,8 @@ export const EditGateway: React.FC = () => {
                                 }}
                                 secondaryControl={
                                     renderSpinner() ?? (
-                                        <Button formAction="none" disabled={!domainFieldValue} onClick={onTest}>
-                                            {t('common.test')}
+                                        <Button loading={isUpdating} disabled={isUpdating} variant="primary">
+                                            {t('common.save')}
                                         </Button>
                                     )
                                 }

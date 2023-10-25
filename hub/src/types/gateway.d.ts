@@ -1,14 +1,12 @@
 declare interface IGateway {
     backend: string,
-    head: {
-        instance_name: string,
-        external_ip: string,
-        internal_ip: string,
-        created_at?: number,
-        region: string,
-        wildcard_domain?: string
-    },
+    name: string,
+    ip_address: string,
+    instance_id: string,
+    region:string
+    wildcard_domain?: string
     default: boolean
+    created_at?: number,
 }
 
 declare type TGatewayBackendsListResponse = {
@@ -17,18 +15,11 @@ declare type TGatewayBackendsListResponse = {
 }[]
 
 declare type TCreateGatewayParams = {
-    backend: string,
+    backend_type: string,
     region?: string,
 }
 
 declare type TUpdateGatewayParams = {
     wildcard_domain?: string,
     default?: boolean,
-}
-
-declare interface IGatewayBackend {
-    backend: string,
-    region?: string,
-    wildcard_domain?: string
-    default?: boolean
 }

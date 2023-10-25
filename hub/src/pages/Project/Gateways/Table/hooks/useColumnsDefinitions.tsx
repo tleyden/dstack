@@ -26,7 +26,7 @@ export const useColumnsDefinitions = ({ loading, onDeleteClick, onEditClick }: h
             {
                 id: 'region',
                 header: t('gateway.edit.region'),
-                cell: (gateway: IGateway) => gateway.head.region,
+                cell: (gateway: IGateway) => gateway.region,
             },
 
             {
@@ -38,7 +38,7 @@ export const useColumnsDefinitions = ({ loading, onDeleteClick, onEditClick }: h
             {
                 id: 'external_ip',
                 header: t('gateway.edit.external_ip'),
-                cell: (gateway: IGateway) => gateway.head.external_ip,
+                cell: (gateway: IGateway) => gateway.ip_address,
             },
 
             {
@@ -47,7 +47,7 @@ export const useColumnsDefinitions = ({ loading, onDeleteClick, onEditClick }: h
 
                 cell: (gateway: IGateway) => (
                     <div className={styles.cell}>
-                        <div>{gateway.head.wildcard_domain}</div>
+                        <div>{gateway.wildcard_domain}</div>
 
                         <div className={styles.contextMenu}>
                             {onEditClick && (
