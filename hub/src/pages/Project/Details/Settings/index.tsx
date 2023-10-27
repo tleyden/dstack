@@ -67,9 +67,15 @@ export const ProjectSettings: React.FC = () => {
     ]);
 
     const changeMembersHandler = (members: IProjectMember[]) => {
+        console.log('test2', members);
+        console.log(
+            'test3',
+            members.map((m) => ({ project_role: m.project_role, username: m.user.username })),
+        );
+
         updateProjectMembers({
             project_name: paramProjectName,
-            members,
+            members: members.map((m) => ({ project_role: m.project_role, username: m.user.username })),
         })
             .unwrap()
             .catch((error) => {

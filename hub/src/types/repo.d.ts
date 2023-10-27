@@ -18,7 +18,5 @@ declare interface IRemoteRepoInfo {
 
 declare interface IRepo {
     repo_id: string,
-    last_run_at: number,
-    tags_count: number,
     repo_info : ILocalRepoInfo | IRemoteRepoInfo
 }

@@ -20,7 +20,7 @@ export const UserAutosuggest: React.FC<Props> = ({ optionsFilter, onSelect: onSe
         if (!usersData) return [];
 
         return usersData.map((user) => ({
-            value: user.user_name,
+            value: user.username,
         }));
     }, [usersData]);
 

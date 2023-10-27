@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { format } from 'date-fns';
 
+// import { format } from 'date-fns';
 import { Button, Cards, ConfirmationDialog, Header, ListEmptyMessage, NavigateLink, Pagination, TextFilter } from 'components';
 
-import { DATE_TIME_FORMAT } from 'consts';
+// import { DATE_TIME_FORMAT } from 'consts';
 import { useBreadcrumbs, useCollection, useNotifications } from 'hooks';
 import { getRepoDisplayName } from 'libs/repo';
 import { ROUTES } from 'routes';
@@ -26,10 +26,10 @@ export const RepositoryList: React.FC = () => {
 
     const [deleteRepos, { isLoading: isDeletingRepos }] = useDeleteProjectRepoMutation();
 
-    const sortingData = useMemo(() => {
+    const reposData = useMemo(() => {
         if (!data) return [];
 
-        return [...data].sort((a, b) => b.last_run_at - a.last_run_at);
+        return data;
     }, [data]);
 
     const renderEmptyMessage = (): React.ReactNode => {
@@ -49,7 +49,7 @@ export const RepositoryList: React.FC = () => {
         );
     };
 
-    const { items, actions, filteredItemsCount, collectionProps, filterProps, paginationProps } = useCollection(sortingData, {
+    const { items, actions, filteredItemsCount, collectionProps, filterProps, paginationProps } = useCollection(reposData, {
         filtering: {
             empty: renderEmptyMessage(),
             noMatch: renderNoMatchMessage(() => actions.setFiltering('')),
@@ -92,11 +92,11 @@ export const RepositoryList: React.FC = () => {
     const renderCounter = () => {
         const { selectedItems } = collectionProps;
 
-        if (!sortingData.length) return '';
+        if (!reposData.length) return '';
 
         if (selectedItems?.length) return `(${selectedItems?.length}/${data?.length ?? 0})`;
 
-        return `(${sortingData.length})`;
+        return `(${reposData.length})`;
     };
 
     const getDisableDeleteButton = () => {
@@ -120,11 +120,11 @@ export const RepositoryList: React.FC = () => {
                     ),
 
                     sections: [
-                        {
-                            id: 'last_run',
-                            header: t('projects.repo.card.last_run'),
-                            content: (repo) => format(new Date(repo.last_run_at), DATE_TIME_FORMAT),
-                        },
+                        // {
+                        //     id: 'last_run',
+                        //     header: t('projects.repo.card.last_run'),
+                        //     content: (repo) => format(new Date(repo.last_run_at), DATE_TIME_FORMAT),
+                        // },
                         // {
                         //     id: 'tags_count',
                         //     header: t('projects.repo.card.tags_count'),

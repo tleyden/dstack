@@ -58,11 +58,13 @@ export const projectApi = createApi({
             invalidatesTags: (result) => [{ type: 'Projects' as const, id: result?.project_name }],
         }),
 
-        updateProjectMembers: builder.mutation<IProject, Pick<IProject, 'project_name' | 'members'>>({
-            query: (project) => ({
-                url: API.PROJECTS.MEMBERS(project.project_name),
+        updateProjectMembers: builder.mutation<IProject, TSetProjectMembersParams>({
+            query: ({ project_name, members }) => ({
+                url: API.PROJECTS.SET_MEMBERS(project_name),
                 method: 'POST',
-                body: project.members,
+                body: {
+                    members,
+                },
             }),
 
             invalidatesTags: (result, error, params) => [{ type: 'Projects' as const, id: params?.project_name }],
@@ -73,7 +75,7 @@ export const projectApi = createApi({
                 url: API.PROJECTS.DELETE(),
                 method: 'POST',
                 body: {
-                    projects: projectNames,
+                    projects_names: projectNames,
                 },
             }),
 

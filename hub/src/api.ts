@@ -19,7 +19,7 @@ export const API = {
         DELETE: () => `${API.PROJECTS.BASE()}/delete`,
         DETAILS: (name: IProject['project_name']) => `${API.PROJECTS.BASE()}/${name}`,
         DETAILS_INFO: (name: IProject['project_name']) => `${API.PROJECTS.DETAILS(name)}/get`,
-        MEMBERS: (name: IProject['project_name']) => `${API.PROJECTS.DETAILS(name)}/set_members`,
+        SET_MEMBERS: (name: IProject['project_name']) => `${API.PROJECTS.DETAILS(name)}/set_members`,
 
         // Repos
         REPOS: (projectName: IProject['project_name']) => `${API.BASE()}/project/${projectName}/repos`,

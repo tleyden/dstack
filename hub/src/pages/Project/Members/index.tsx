@@ -7,6 +7,7 @@ import { Button, FormSelect, Header, Link, ListEmptyMessage, Pagination, Table }
 import { useCollection } from 'hooks';
 import { ROUTES } from 'routes';
 
+import { useGetUserListQuery } from '../../../services/user';
 import { UserAutosuggest } from './UsersAutosuggest';
 
 import { IProps, TFormValues, TProjectMemberWithIndex } from './types';
@@ -18,6 +19,7 @@ import styles from './styles.module.scss';
 export const ProjectMembers: React.FC<IProps> = ({ initialValues, loading, onChange, readonly }) => {
     const { t } = useTranslation();
     const [selectedItems, setSelectedItems] = useState<TProjectMemberWithIndex[]>([]);
+    const { data: usersData } = useGetUserListQuery();
 
     const { handleSubmit, control, getValues } = useForm<TFormValues>({
         defaultValues: { members: initialValues ?? [] },
@@ -28,7 +30,10 @@ export const ProjectMembers: React.FC<IProps> = ({ initialValues, loading, onCha
         name: 'members',
     });
 
-    const onChangeHandler = () => onChange(getValues('members'));
+    const onChangeHandler = () => {
+        console.log('test1', getValues('members'));
+        onChange(getValues('members'));
+    };
 
     const fieldsWithIndex = fields.map<TProjectMemberWithIndex>((field, index) => ({ ...field, index }));
 
@@ -47,17 +52,20 @@ export const ProjectMembers: React.FC<IProps> = ({ initialValues, loading, onCha
 
     const roleSelectOptions: TRoleSelectOption[] = [
         { label: t('roles.admin'), value: 'admin' },
-        { label: t('roles.run'), value: 'run' },
-        { label: t('roles.read'), value: 'read' },
+        { label: t('roles.user'), value: 'user' },
     ];
 
-    const addMember = (user_name: string) => {
-        append({
-            user_name,
-            project_role: 'read',
-        });
+    const addMember = (username: string) => {
+        const selectedUser = usersData?.find((u) => u.username === username);
 
-        onChangeHandler();
+        if (selectedUser) {
+            append({
+                user: selectedUser,
+                project_role: 'user',
+            });
+
+            onChangeHandler();
+        }
     };
 
     const deleteSelectedMembers = () => {
@@ -71,8 +79,8 @@ export const ProjectMembers: React.FC<IProps> = ({ initialValues, loading, onCha
             id: 'name',
             header: t('projects.edit.members.name'),
             cell: (item: IProjectMember) => (
-                <Link target="_blank" href={ROUTES.USER.DETAILS.FORMAT(item.user_name)}>
-                    {item.user_name}
+                <Link target="_blank" href={ROUTES.USER.DETAILS.FORMAT(item.user.username)}>
+                    {item.user.username}
                 </Link>
             ),
         },
@@ -116,7 +124,6 @@ export const ProjectMembers: React.FC<IProps> = ({ initialValues, loading, onCha
         <form onSubmit={handleSubmit(() => {})}>
             <Table
                 selectionType="multi"
-                trackBy="user_name"
                 selectedItems={selectedItems}
                 onSelectionChange={(event) => setSelectedItems(event.detail.selectedItems)}
                 columnDefinitions={COLUMN_DEFINITIONS}
@@ -141,7 +148,7 @@ export const ProjectMembers: React.FC<IProps> = ({ initialValues, loading, onCha
                         <UserAutosuggest
                             disabled={loading}
                             onSelect={({ detail }) => addMember(detail.value)}
-                            optionsFilter={(options) => options.filter((o) => !fields.find((f) => f.user_name === o.value))}
+                            optionsFilter={(options) => options.filter((o) => !fields.find((f) => f.user.username === o.value))}
                         />
                     )
                 }

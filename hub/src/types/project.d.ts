@@ -10,8 +10,16 @@ declare interface IProject {
 }
 
 declare interface IProjectMember {
-    user_name: string,
     project_role: TProjectRole,
+    user: IUser
 }
 
-declare type TProjectRole = 'read' | 'run' | 'admin'
+declare type TSetProjectMembersParams = {
+    project_name: string,
+    members: Array<{
+        project_role: TProjectRole,
+        username: string
+    }>
+}
+
+declare type TProjectRole = TUserRole

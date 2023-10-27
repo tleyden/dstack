@@ -26,11 +26,12 @@ export const runApi = createApi({
     tagTypes: ['Runs', 'AllRuns'],
 
     endpoints: (builder) => ({
-        getAllRuns: builder.query<IRunListItem[], void>({
-            query: () => {
+        getAllRuns: builder.query<IRunListItem[], { project_name?: string; repo_id?: string } | undefined>({
+            query: (body = {}) => {
                 return {
                     url: API.RUNS.LIST(),
                     method: 'POST',
+                    body,
                 };
             },
 
