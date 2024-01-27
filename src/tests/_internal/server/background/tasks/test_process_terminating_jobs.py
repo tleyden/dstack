@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from dstack._internal.core.models.backends.base import BackendType

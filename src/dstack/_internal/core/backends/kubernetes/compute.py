@@ -264,7 +264,7 @@ def _create_jump_pod_service(
     # TODO use restricted ssh-forwarding-only user for jump pod instead of root.
     commands = _get_jump_pod_commands(authorized_keys=[project_ssh_public_key])
     pod_name = _get_jump_pod_name(project_name)
-    response = api.create_namespaced_pod(
+    api.create_namespaced_pod(
         namespace=DEFAULT_NAMESPACE,
         body=client.V1Pod(
             metadata=client.V1ObjectMeta(
@@ -289,7 +289,7 @@ def _create_jump_pod_service(
             ),
         ),
     )
-    response = api.create_namespaced_service(
+    api.create_namespaced_service(
         namespace=DEFAULT_NAMESPACE,
         body=client.V1Service(
             metadata=client.V1ObjectMeta(name=_get_jump_pod_service_name(project_name)),

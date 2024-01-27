@@ -222,7 +222,7 @@ def get_latest_runner_build() -> Optional[str]:
         try:
             if repo.is_ancestor(run["head_sha"], head):
                 ver = str(run["run_number"] + version_offset)
-                logger.debug(f"Found the latest runner build: %s", ver)
+                logger.debug("Found the latest runner build: %s", ver)
                 return ver
         except git.GitCommandError as e:
             if "Not a valid commit name" not in e.stderr:
