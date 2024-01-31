@@ -7,7 +7,6 @@ import git
 import requests
 import yaml
 
-from dstack import version
 from dstack._internal import settings
 from dstack._internal.core.models.backends.base import BackendType
 from dstack._internal.core.models.instances import (

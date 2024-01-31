@@ -23,7 +23,6 @@ from dstack._internal.core.models.instances import (
     InstanceAvailability,
     InstanceOfferWithAvailability,
     InstanceType,
-    LaunchedGatewayInfo,
     LaunchedInstanceInfo,
     Resources,
     SSHConnectionParams,
