@@ -3,6 +3,9 @@ from unittest.mock import patch
 
 import pytest
 import yaml
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from dstack._internal.core.models.backends.azure import AzureConfigInfoWithCreds, AzureDefaultCreds
 from dstack._internal.core.models.backends.base import BackendType
 from dstack._internal.server import settings
@@ -11,8 +14,6 @@ from dstack._internal.server.services.config import AzureConfig, ServerConfigMan
 from dstack._internal.server.testing.common import (
     create_project,
 )
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class TestServerConfigManager:

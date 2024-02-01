@@ -5,6 +5,10 @@ from unittest.mock import Mock, patch
 from uuid import UUID
 
 import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from dstack._internal.core.models.backends.base import BackendType
 from dstack._internal.core.models.instances import (
     InstanceAvailability,
@@ -25,9 +29,6 @@ from dstack._internal.server.testing.common import (
     create_user,
     get_auth_headers,
 )
-from fastapi.testclient import TestClient
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 client = TestClient(app)
 

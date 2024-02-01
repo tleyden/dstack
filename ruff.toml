@@ -2,9 +2,11 @@ target-version = "py38"
 line-length = 99
 
 [lint]
-select = ['E', 'F', 'I']
+select = ['E', 'F', 'I' ,'Q', 'W', 'PGH', 'FLY']
 ignore =[
   'E501',
-  'E741',
   'E712',
 ]
+
+[lint.isort]
+known-first-party = ["dstack"]

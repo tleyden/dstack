@@ -1,6 +1,8 @@
 from unittest.mock import patch
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from dstack._internal.core.models.backends.base import BackendType
 from dstack._internal.core.models.instances import InstanceType, Resources
 from dstack._internal.core.models.runs import JobProvisioningData, JobStatus
@@ -12,7 +14,6 @@ from dstack._internal.server.testing.common import (
     create_run,
     create_user,
 )
-from sqlalchemy.ext.asyncio import AsyncSession
 
 MODULE = "dstack._internal.server.background.tasks.process_finished_jobs"
 
